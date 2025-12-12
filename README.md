@@ -1,94 +1,237 @@
-# Obsidian Sample Plugin
+# Nepali Calendar Plugin for Obsidian
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+A calendar plugin for [Obsidian](https://obsidian.md/) that displays and manages daily notes using the Nepali calendar (Bikram Sambat - BS) system.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+![Nepali Calendar Plugin](https://img.shields.io/badge/Obsidian-Plugin-purple)
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## Features
 
-## First time developing plugins?
+- **Nepali Calendar View**: Display a calendar using the Bikram Sambat (BS) calendar system
+- **Dual Calendar Display**: Show both Nepali and English (Gregorian) month names simultaneously
+- **Daily Notes Integration**: Create and navigate daily notes based on Nepali dates
+- **Visual Indicators**: 
+  - Highlight today's date
+  - Show dots for days that have notes
+- **Quick Navigation**: 
+  - Navigate between months easily
+  - Jump to today with a single click
+  - Click on any day to open or create a daily note
+- **Keyboard Shortcuts**: 
+  - Ctrl/Cmd + Click to open notes in a new pane
+  - Ctrl/Cmd + Hover to preview notes
+- **Customizable Settings**:
+  - Configure date format for daily notes
+  - Set folder location for daily notes
+  - Toggle confirmation before creating new notes
+  - Show/hide Nepali or English month names
 
-Quick starting guide for new plugin devs:
+## Installation
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+### From Obsidian Community Plugins (Coming Soon)
 
-## Releasing new releases
+1. Open Settings in Obsidian
+2. Navigate to Community Plugins
+3. Search for "Nepali Calendar"
+4. Click Install
+5. Enable the plugin
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+### Manual Installation
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+1. Download the latest release from the [Releases](https://github.com/kiranojhanp/nepali-calendar/releases) page
+2. Extract the files to your vault's `.obsidian/plugins/nepali-calendar/` folder
+3. Reload Obsidian
+4. Enable the plugin in Settings → Community Plugins
 
-## Adding your plugin to the community plugin list
+## Usage
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+### Opening the Calendar
 
-## How to use
+After enabling the plugin, you can open the calendar view in several ways:
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+1. **Ribbon Icon**: Click the calendar icon in the left ribbon
+2. **Command Palette**: Search for "Nepali Calendar: Open calendar view"
+3. **Automatic**: The calendar will open automatically in the right sidebar when you start Obsidian
 
-## Manually installing the plugin
+### Creating Daily Notes
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+1. Click on any day in the calendar
+2. If the note doesn't exist:
+   - A confirmation dialog will appear (if enabled in settings)
+   - Click "Create" to create a new daily note for that date
+3. If the note exists, it will open immediately
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint ./src/`
+### Navigation
 
-## Funding URL
+- **Previous/Next Month**: Click the `‹` and `›` buttons
+- **Today**: Click the "Today" button to jump to the current month
+- **Open in New Pane**: Hold Ctrl/Cmd while clicking a day to open the note in a new pane
+- **Preview Notes**: Hold Ctrl/Cmd while hovering over a day to preview the note
 
-You can include funding URLs where people who use your plugin can financially support it.
+### Daily Note Format
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+Daily notes are created with the following default content:
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
+```markdown
+# Baisakh 15, 2081
+
+**English Date:** Monday, April 28, 2024
+
+```
+
+## Settings
+
+### Daily Note Format
+
+Specify the date format for your daily note filenames. The default is `YYYY-MM-DD` which creates files like `2081-01-15.md`.
+
+**Available format tokens:**
+- `YYYY` - 4-digit year (e.g., 2081)
+- `MM` - 2-digit month (e.g., 01)
+- `DD` - 2-digit day (e.g., 15)
+- `MMMM` - Full month name (e.g., Baisakh)
+- `M` - Month number without padding (e.g., 1)
+
+### Daily Note Folder
+
+Specify where daily notes should be created. Leave empty to create them in the vault root.
+
+### Confirm Before Creating New Note
+
+Enable/disable the confirmation dialog that appears before creating a new daily note.
+
+### Show Nepali Month
+
+Toggle the display of Nepali month names in the calendar header.
+
+### Show English Month
+
+Toggle the display of English (Gregorian) month names alongside Nepali month names.
+
+## Nepali Calendar (Bikram Sambat) Information
+
+The Bikram Sambat (BS) calendar is the official calendar of Nepal. Key features:
+
+- **Year Offset**: Nepali year is approximately 56-57 years ahead of the Gregorian year
+- **Months**: 12 months with varying days (29-32 days per month)
+- **New Year**: Typically starts in mid-April of the Gregorian calendar
+- **Month Names**: Baisakh, Jestha, Ashadh, Shrawan, Bhadra, Ashwin, Kartik, Mangsir, Poush, Magh, Falgun, Chaitra
+
+### Supported Date Range
+
+The plugin currently supports Nepali dates from:
+- **2080 BS** (April 14, 2023 AD) to **2090 BS** (approximately 2033 AD)
+
+## Commands
+
+The plugin adds the following commands to the Command Palette:
+
+- **Nepali Calendar: Open calendar view** - Opens or reveals the calendar view
+- **Nepali Calendar: Open today's daily note** - Opens or creates today's daily note
+
+## Customization
+
+### CSS Variables
+
+You can customize the appearance of the calendar by adding custom CSS to your `obsidian.css` file or a CSS snippet:
+
+```css
+.nepali-calendar-container {
+  /* Customize calendar container */
+}
+
+.calendar-day-today {
+  /* Customize today's date appearance */
+}
+
+.calendar-day-has-note {
+  /* Customize days with notes */
 }
 ```
 
-If you have multiple URLs, you can also do:
+## Development
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/kiranojhanp/nepali-calendar.git
+cd nepali-calendar
+
+# Install dependencies
+npm install
+
+# Build the plugin
+npm run build
+
+# For development with auto-rebuild
+npm run dev
 ```
 
-## API Documentation
+### Project Structure
 
-See https://github.com/obsidianmd/obsidian-api
+```
+nepali-calendar/
+├── src/
+│   ├── utils/
+│   │   └── nepali-date.ts    # Nepali date conversion utilities
+│   ├── view.ts                # Calendar view component
+│   └── settings.ts            # Settings interface
+├── main.ts                    # Plugin entry point
+├── styles.css                 # Plugin styles
+└── manifest.json              # Plugin manifest
+```
+
+## Compatibility
+
+- **Obsidian Version**: Requires Obsidian v0.15.0 or higher
+- **Platform**: Works on Desktop and Mobile
+
+## Known Limitations
+
+- The Nepali calendar data is pre-defined for years 2080-2090 BS
+- Date conversions may have minor variations (±1 day) due to astronomical calculations
+
+## Roadmap
+
+- [ ] Extended date range support (add more years)
+- [ ] Weekly notes support
+- [ ] Custom templates for daily notes
+- [ ] Import/export calendar events
+- [ ] Multi-language support (Nepali/English)
+- [ ] Integration with other Nepali date plugins
+
+## Support
+
+If you encounter any issues or have suggestions:
+
+1. Check the [Issues](https://github.com/kiranojhanp/nepali-calendar/issues) page
+2. Create a new issue with details about the problem
+3. Include your Obsidian version and plugin version
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details
+
+## Acknowledgments
+
+- Inspired by [obsidian-calendar-plugin](https://github.com/liamcain/obsidian-calendar-plugin)
+- Nepali calendar conversion algorithms based on standard BS calendar data
+- Built with the [Obsidian API](https://github.com/obsidianmd/obsidian-api)
+
+## Credits
+
+Developed by [kiranojhanp](https://github.com/kiranojhanp)
+
+---
+
+**Note**: This plugin is not affiliated with or endorsed by Obsidian.md or the Nepali government. The Nepali calendar conversions are provided as-is and should be verified for critical applications.
+

@@ -1,11 +1,10 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "nepali-calendar",
+	"name": "Nepali Calendar",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "A calendar plugin for visualizing and navigating Nepali (Bikram Sambat) dates with daily notes integration.",
+	"author": "kiranojhanp",
+	"authorUrl": "https://github.com/kiranojhanp",
 	"isDesktopOnly": false
 }
