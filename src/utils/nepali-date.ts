@@ -146,21 +146,23 @@ export function nepaliToGregorian(nepaliDate: NepaliDate): Date {
  * Get number of days in a Nepali month
  */
 export function getDaysInNepaliMonth(year: number, month: number): number {
-	if (nepaliCalendarData[year]) {
-		return nepaliCalendarData[year][month - 1];
+	if (!nepaliCalendarData[year]) {
+		console.warn(`Nepali calendar data not available for year ${year}. Using default value.`);
+		// Default fallback
+		return 30;
 	}
-	// Default fallback (shouldn't happen with proper data)
-	return 30;
+	return nepaliCalendarData[year][month - 1];
 }
 
 /**
  * Get total days in a Nepali year
  */
 function getTotalDaysInNepaliYear(year: number): number {
-	if (nepaliCalendarData[year]) {
-		return nepaliCalendarData[year].reduce((sum, days) => sum + days, 0);
+	if (!nepaliCalendarData[year]) {
+		console.warn(`Nepali calendar data not available for year ${year}. Using default value of 365 days.`);
+		return 365; // Default fallback
 	}
-	return 365; // Default fallback
+	return nepaliCalendarData[year].reduce((sum, days) => sum + days, 0);
 }
 
 /**

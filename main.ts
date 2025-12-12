@@ -41,6 +41,15 @@ export default class NepaliCalendarPlugin extends Plugin {
 				const today = getCurrentNepaliDate();
 				if (this.view) {
 					await this.view.handleDayClick(today, false);
+				} else {
+					// If view is not initialized, activate it first
+					await this.activateView();
+					// Give view time to initialize
+					setTimeout(async () => {
+						if (this.view) {
+							await this.view.handleDayClick(today, false);
+						}
+					}, 100);
 				}
 			}
 		});

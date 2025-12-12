@@ -56,11 +56,24 @@ export class NepaliCalendarView extends ItemView {
 	plugin: NepaliCalendarPlugin;
 	currentDisplayMonth: NepaliDate;
 	calendarEl: HTMLElement;
+	private isMetaKeyPressed = false;
 
 	constructor(leaf: WorkspaceLeaf, plugin: NepaliCalendarPlugin) {
 		super(leaf);
 		this.plugin = plugin;
 		this.currentDisplayMonth = getCurrentNepaliDate();
+
+		// Track meta key state for hover previews
+		this.registerDomEvent(document, 'keydown', (e: KeyboardEvent) => {
+			if (e.key === 'Meta' || e.key === 'Control') {
+				this.isMetaKeyPressed = true;
+			}
+		});
+		this.registerDomEvent(document, 'keyup', (e: KeyboardEvent) => {
+			if (e.key === 'Meta' || e.key === 'Control') {
+				this.isMetaKeyPressed = false;
+			}
+		});
 	}
 
 	getViewType(): string {
@@ -179,8 +192,8 @@ export class NepaliCalendarView extends ItemView {
 			});
 
 			// Add hover preview support
-			dayEl.addEventListener('mouseenter', (e) => {
-				if (e.ctrlKey || e.metaKey) {
+			dayEl.addEventListener('mouseenter', () => {
+				if (this.isMetaKeyPressed) {
 					this.handleDayHover(nepaliDate, dayEl);
 				}
 			});
