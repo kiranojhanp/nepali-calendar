@@ -1,293 +1,329 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice, Modal, App } from 'obsidian';
-import type NepaliCalendarPlugin from '../main';
+import type { Moment } from "moment";
 import {
-	NepaliDate,
-	gregorianToNepali,
-	nepaliToGregorian,
-	formatNepaliDate,
-	nepaliMonthNames,
-	getDaysInNepaliMonth,
-	addMonthsToNepaliDate,
-	isSameNepaliDate,
-	getCurrentNepaliDate,
-	getFirstDayOfNepaliMonth
-} from './utils/nepali-date';
+	getDailyNote,
+	getDailyNoteSettings,
+	getDateFromFile,
+	getWeeklyNote,
+	getWeeklyNoteSettings,
+} from "obsidian-daily-notes-interface";
+import { FileView, TFile, ItemView, WorkspaceLeaf, TAbstractFile } from "obsidian";
+import { get } from "svelte/store";
 
-export const VIEW_TYPE_NEPALI_CALENDAR = 'nepali-calendar-view';
+import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
+import { tryToCreateDailyNote } from "src/io/dailyNotes";
+import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
+import type { ISettings } from "src/settings";
 
-class ConfirmCreateModal extends Modal {
-	date: NepaliDate;
-	onConfirm: () => void;
+import Calendar from "./ui/Calendar.svelte";
+import { showFileMenu } from "./ui/fileMenu";
+import { activeFile, dailyNotes, weeklyNotes, settings } from "./ui/stores";
+import {
+	customTagsSource,
+	streakSource,
+	tasksSource,
+	wordCountSource,
+} from "./ui/sources";
 
-	constructor(app: App, date: NepaliDate, onConfirm: () => void) {
-		super(app);
-		this.date = date;
-		this.onConfirm = onConfirm;
-	}
+export default class CalendarView extends ItemView {
+	private calendar!: Calendar;
+	private settings!: ISettings;
 
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.createEl('h3', { text: 'Create new daily note?' });
-		contentEl.createEl('p', { 
-			text: `Do you want to create a daily note for ${formatNepaliDate(this.date, 'YYYY-MM-DD')}?` 
-		});
-
-		const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
-		
-		const confirmBtn = buttonContainer.createEl('button', { text: 'Create', cls: 'mod-cta' });
-		confirmBtn.addEventListener('click', () => {
-			this.onConfirm();
-			this.close();
-		});
-
-		const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-
-export class NepaliCalendarView extends ItemView {
-	plugin: NepaliCalendarPlugin;
-	currentDisplayMonth: NepaliDate;
-	calendarEl: HTMLElement;
-	private isMetaKeyPressed = false;
-
-	constructor(leaf: WorkspaceLeaf, plugin: NepaliCalendarPlugin) {
+	constructor(leaf: WorkspaceLeaf) {
 		super(leaf);
-		this.plugin = plugin;
-		this.currentDisplayMonth = getCurrentNepaliDate();
 
-		// Track meta key state for hover previews
-		this.registerDomEvent(document, 'keydown', (e: KeyboardEvent) => {
-			if (e.key === 'Meta' || e.key === 'Control') {
-				this.isMetaKeyPressed = true;
-			}
-		});
-		this.registerDomEvent(document, 'keyup', (e: KeyboardEvent) => {
-			if (e.key === 'Meta' || e.key === 'Control') {
-				this.isMetaKeyPressed = false;
+		this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
+		this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
+
+		this.onNoteSettingsUpdate = this.onNoteSettingsUpdate.bind(this);
+		this.onFileCreated = this.onFileCreated.bind(this);
+		this.onFileDeleted = this.onFileDeleted.bind(this);
+		this.onFileModified = this.onFileModified.bind(this);
+		this.onFileOpen = this.onFileOpen.bind(this);
+
+		this.onHoverDay = this.onHoverDay.bind(this);
+		this.onHoverWeek = this.onHoverWeek.bind(this);
+
+		this.onContextMenuDay = this.onContextMenuDay.bind(this);
+		this.onContextMenuWeek = this.onContextMenuWeek.bind(this);
+
+		this.registerEvent(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(<any>this.app.workspace).on(
+				"periodic-notes:settings-updated",
+				this.onNoteSettingsUpdate
+			)
+		);
+		this.registerEvent(this.app.vault.on(("create" as any), this.onFileCreated));
+		this.registerEvent(this.app.vault.on(("delete" as any), this.onFileDeleted));
+		this.registerEvent(this.app.vault.on(("modify" as any), this.onFileModified));
+		this.registerEvent(this.app.workspace.on(("file-open" as any), this.onFileOpen));
+		settings.subscribe((val) => {
+			this.settings = val;
+
+			// Refresh the calendar if settings change
+			if (this.calendar) {
+				this.calendar.tick();
 			}
 		});
 	}
 
 	getViewType(): string {
-		return VIEW_TYPE_NEPALI_CALENDAR;
+		return VIEW_TYPE_CALENDAR;
 	}
 
 	getDisplayText(): string {
-		return 'Nepali Calendar';
+		return "Calendar";
 	}
 
 	getIcon(): string {
-		return 'calendar-with-checkmark';
+		return "calendar-with-checkmark";
 	}
 
-	async onOpen() {
-		const container = this.containerEl.children[1];
-		container.empty();
-		container.addClass('nepali-calendar-container');
-
-		this.calendarEl = container.createDiv({ cls: 'nepali-calendar' });
-		this.renderCalendar();
-	}
-
-	async onClose() {
-		// Clean up
-	}
-
-	renderCalendar() {
-		this.calendarEl.empty();
-
-		// Header with navigation
-		const header = this.calendarEl.createDiv({ cls: 'calendar-header' });
-		
-		const prevBtn = header.createEl('button', { text: '‹', cls: 'calendar-nav-btn' });
-		prevBtn.addEventListener('click', () => {
-			this.currentDisplayMonth = addMonthsToNepaliDate(this.currentDisplayMonth, -1);
-			this.renderCalendar();
-		});
-
-		const monthYearText = header.createDiv({ cls: 'calendar-month-year' });
-		const nepaliMonthYear = `${nepaliMonthNames[this.currentDisplayMonth.month - 1]} ${this.currentDisplayMonth.year}`;
-		
-		if (this.plugin.settings.showNepaliMonth && this.plugin.settings.showEnglishMonth) {
-			const gregorianDate = nepaliToGregorian(getFirstDayOfNepaliMonth(this.currentDisplayMonth.year, this.currentDisplayMonth.month));
-			const englishMonth = gregorianDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-			monthYearText.setText(`${nepaliMonthYear} (${englishMonth})`);
-		} else if (this.plugin.settings.showNepaliMonth) {
-			monthYearText.setText(nepaliMonthYear);
-		} else {
-			const gregorianDate = nepaliToGregorian(getFirstDayOfNepaliMonth(this.currentDisplayMonth.year, this.currentDisplayMonth.month));
-			const englishMonth = gregorianDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-			monthYearText.setText(englishMonth);
+	onClose(): Promise<void> {
+		if (this.calendar) {
+			this.calendar.$destroy();
 		}
+		return Promise.resolve();
+	}
 
-		const nextBtn = header.createEl('button', { text: '›', cls: 'calendar-nav-btn' });
-		nextBtn.addEventListener('click', () => {
-			this.currentDisplayMonth = addMonthsToNepaliDate(this.currentDisplayMonth, 1);
-			this.renderCalendar();
+	async onOpen(): Promise<void> {
+		// Integration point: external plugins can listen for `calendar:open`
+		// to feed in additional sources.
+		const sources = [
+			customTagsSource,
+			streakSource,
+			wordCountSource,
+			tasksSource,
+		];
+		this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
+
+		this.calendar = new Calendar({
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			target: (this as any).contentEl,
+			props: {
+				onClickDay: this.openOrCreateDailyNote,
+				onClickWeek: this.openOrCreateWeeklyNote,
+				onHoverDay: this.onHoverDay,
+				onHoverWeek: this.onHoverWeek,
+				onContextMenuDay: this.onContextMenuDay,
+				onContextMenuWeek: this.onContextMenuWeek,
+				sources,
+			},
 		});
+	}
 
-		const todayBtn = header.createEl('button', { text: 'Today', cls: 'calendar-today-btn' });
-		todayBtn.addEventListener('click', () => {
-			this.currentDisplayMonth = getCurrentNepaliDate();
-			this.renderCalendar();
-		});
-
-		// Days of week header
-		const daysHeader = this.calendarEl.createDiv({ cls: 'calendar-days-header' });
-		const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-		dayNames.forEach(day => {
-			daysHeader.createDiv({ text: day, cls: 'calendar-day-name' });
-		});
-
-		// Calendar grid
-		const grid = this.calendarEl.createDiv({ cls: 'calendar-grid' });
-
-		const firstDayOfMonth = getFirstDayOfNepaliMonth(this.currentDisplayMonth.year, this.currentDisplayMonth.month);
-		const firstGregorianDate = nepaliToGregorian(firstDayOfMonth);
-		const startDayOfWeek = firstGregorianDate.getDay(); // 0 = Sunday, 6 = Saturday
-
-		const daysInMonth = getDaysInNepaliMonth(this.currentDisplayMonth.year, this.currentDisplayMonth.month);
-		const today = getCurrentNepaliDate();
-
-		// Add empty cells for days before the start of the month
-		for (let i = 0; i < startDayOfWeek; i++) {
-			grid.createDiv({ cls: 'calendar-day calendar-day-empty' });
+	onHoverDay(
+		date: Moment,
+		targetEl: EventTarget,
+		isMetaPressed: boolean
+	): void {
+		if (!isMetaPressed) {
+			return;
 		}
+		const { format } = getDailyNoteSettings();
+		const note = getDailyNote(date, get(dailyNotes));
+		this.app.workspace.trigger(
+			"link-hover",
+			this,
+			targetEl,
+			date.format(format),
+			note?.path
+		);
+	}
 
-		// Add cells for each day of the month
-		for (let day = 1; day <= daysInMonth; day++) {
-			const nepaliDate: NepaliDate = {
-				year: this.currentDisplayMonth.year,
-				month: this.currentDisplayMonth.month,
-				day
-			};
-
-			const dayEl = grid.createDiv({ cls: 'calendar-day' });
-			
-			// Check if this is today
-			if (isSameNepaliDate(nepaliDate, today)) {
-				dayEl.addClass('calendar-day-today');
-			}
-
-			// Check if a note exists for this date
-			const noteExists = this.checkNoteExists(nepaliDate);
-			if (noteExists) {
-				dayEl.addClass('calendar-day-has-note');
-			}
-
-			const dayNumber = dayEl.createDiv({ text: String(day), cls: 'calendar-day-number' });
-
-			// Add click handler
-			dayEl.addEventListener('click', async (e) => {
-				const isCtrlOrMeta = e.ctrlKey || e.metaKey;
-				await this.handleDayClick(nepaliDate, isCtrlOrMeta);
-			});
-
-			// Add hover preview support
-			dayEl.addEventListener('mouseenter', () => {
-				if (this.isMetaKeyPressed) {
-					this.handleDayHover(nepaliDate, dayEl);
-				}
-			});
+	onHoverWeek(
+		date: Moment,
+		targetEl: EventTarget,
+		isMetaPressed: boolean
+	): void {
+		if (!isMetaPressed) {
+			return;
 		}
+		const note = getWeeklyNote(date, get(weeklyNotes));
+		const { format } = getWeeklyNoteSettings();
+		this.app.workspace.trigger(
+			"link-hover",
+			this,
+			targetEl,
+			date.format(format),
+			note?.path
+		);
 	}
 
-	checkNoteExists(date: NepaliDate): boolean {
-		const filename = this.getDailyNoteFilename(date);
-		const folder = this.plugin.settings.dailyNoteFolder;
-		const path = folder ? `${folder}/${filename}.md` : `${filename}.md`;
-		
-		const file = this.app.vault.getAbstractFileByPath(path);
-		return file instanceof TFile;
+	private onContextMenuDay(date: Moment, event: MouseEvent): void {
+		const note = getDailyNote(date, get(dailyNotes));
+		if (!note) {
+			// If no file exists for a given day, show nothing.
+			return;
+		}
+		showFileMenu(this.app, note, {
+			x: event.pageX,
+			y: event.pageY,
+		});
 	}
 
-	getDailyNoteFilename(date: NepaliDate): string {
-		return formatNepaliDate(date, this.plugin.settings.dailyNoteFormat);
+	private onContextMenuWeek(date: Moment, event: MouseEvent): void {
+		const note = getWeeklyNote(date, get(weeklyNotes));
+		if (!note) {
+			// If no file exists for a given day, show nothing.
+			return;
+		}
+		showFileMenu(this.app, note, {
+			x: event.pageX,
+			y: event.pageY,
+		});
 	}
 
-	async handleDayClick(date: NepaliDate, openInNewPane: boolean) {
-		const filename = this.getDailyNoteFilename(date);
-		const folder = this.plugin.settings.dailyNoteFolder;
-		const path = folder ? `${folder}/${filename}.md` : `${filename}.md`;
+	private onNoteSettingsUpdate(): void {
+		dailyNotes.reindex();
+		weeklyNotes.reindex();
+		this.updateActiveFile();
+	}
 
-		let file = this.app.vault.getAbstractFileByPath(path);
-
+	private async onFileDeleted(file: TAbstractFile): Promise<void> {
 		if (!(file instanceof TFile)) {
-			// File doesn't exist, create it
-			if (this.plugin.settings.shouldConfirmBeforeCreate) {
-				new ConfirmCreateModal(this.app, date, async () => {
-					await this.createDailyNote(date);
-				}).open();
-			} else {
-				await this.createDailyNote(date);
-			}
-		} else {
-			// File exists, open it
-			const leaf = openInNewPane
-				? this.app.workspace.getLeaf('split')
-				: this.app.workspace.getLeaf(false);
-			await leaf.openFile(file);
+			return;
+		}
+		if (getDateFromFile(file, "day")) {
+			dailyNotes.reindex();
+			this.updateActiveFile();
+		}
+		if (getDateFromFile(file, "week")) {
+			weeklyNotes.reindex();
+			this.updateActiveFile();
 		}
 	}
 
-	async createDailyNote(date: NepaliDate) {
-		const filename = this.getDailyNoteFilename(date);
-		const folder = this.plugin.settings.dailyNoteFolder;
-		
-		// Ensure folder exists
-		if (folder) {
-			const folderExists = this.app.vault.getAbstractFileByPath(folder);
-			if (!folderExists) {
-				await this.app.vault.createFolder(folder);
+	private async onFileModified(file: TAbstractFile): Promise<void> {
+		if (!(file instanceof TFile)) {
+			return;
+		}
+		const date =
+			getDateFromFile(file, "day") || getDateFromFile(file, "week");
+		if (date && this.calendar) {
+			this.calendar.tick();
+		}
+	}
+
+	private onFileCreated(file: TAbstractFile): void {
+		if (!(file instanceof TFile)) {
+			return;
+		}
+		if (this.app.workspace.layoutReady && this.calendar) {
+			if (getDateFromFile(file, "day")) {
+				dailyNotes.reindex();
+				this.calendar.tick();
+			}
+			if (getDateFromFile(file, "week")) {
+				weeklyNotes.reindex();
+				this.calendar.tick();
 			}
 		}
-
-		const path = folder ? `${folder}/${filename}.md` : `${filename}.md`;
-
-		// Create the file with basic content
-		const content = this.generateDailyNoteContent(date);
-		const file = await this.app.vault.create(path, content);
-
-		// Open the file
-		const leaf = this.app.workspace.getLeaf(false);
-		await leaf.openFile(file);
-
-		// Refresh the calendar to show the new note
-		this.renderCalendar();
-
-		new Notice(`Created daily note for ${formatNepaliDate(date, 'YYYY-MM-DD')}`);
 	}
 
-	generateDailyNoteContent(date: NepaliDate): string {
-		const gregorianDate = nepaliToGregorian(date);
-		const nepaliDateStr = formatNepaliDate(date, 'MMMM DD, YYYY');
-		const englishDateStr = gregorianDate.toLocaleDateString('en-US', { 
-			weekday: 'long', 
-			year: 'numeric', 
-			month: 'long', 
-			day: 'numeric' 
-		});
-
-		return `# ${nepaliDateStr}\n\n**English Date:** ${englishDateStr}\n\n`;
+	public onFileOpen(_file: TFile): void {
+		if (this.app.workspace.layoutReady) {
+			this.updateActiveFile();
+		}
 	}
 
-	handleDayHover(date: NepaliDate, targetEl: HTMLElement) {
-		const filename = this.getDailyNoteFilename(date);
-		const folder = this.plugin.settings.dailyNoteFolder;
-		const path = folder ? `${folder}/${filename}.md` : `${filename}.md`;
+	private updateActiveFile(): void {
+		const activeLeaf = this.app.workspace.activeLeaf;
 
-		this.app.workspace.trigger('link-hover', this, targetEl, path, path);
+		let file: TFile | null = null;
+		if (activeLeaf && activeLeaf.view instanceof FileView) {
+			file = activeLeaf.view.file;
+		}
+		activeFile.setFile(file);
+
+		if (this.calendar) {
+			this.calendar.tick();
+		}
 	}
 
-	refresh() {
-		this.renderCalendar();
+	public revealActiveNote(): void {
+		const { moment } = window;
+		const activeLeaf = this.app.workspace.activeLeaf;
+
+		if (activeLeaf && activeLeaf.view instanceof FileView) {
+			// Check to see if the active note is a daily-note
+			const file = activeLeaf.view.file;
+			let date = file ? getDateFromFile(file, "day") : null;
+			if (date) {
+				this.calendar.$set({ displayedMonth: date });
+				return;
+			}
+
+			// Check to see if the active note is a weekly-note
+			const { format } = getWeeklyNoteSettings();
+			if (file) {
+				date = moment(file.basename, format, true);
+				if (date.isValid()) {
+					this.calendar.$set({ displayedMonth: date });
+					return;
+				}
+			}
+		}
+	}
+
+	async openOrCreateWeeklyNote(
+		date: Moment,
+		inNewSplit: boolean
+	): Promise<void> {
+		const { workspace } = this.app;
+
+		const startOfWeek = date.clone().startOf("week");
+
+		const existingFile = getWeeklyNote(date, get(weeklyNotes));
+
+		if (!existingFile) {
+			// File doesn't exist
+			tryToCreateWeeklyNote(
+				startOfWeek,
+				inNewSplit,
+				this.settings,
+				(file) => {
+					activeFile.setFile(file);
+				}
+			);
+			return;
+		}
+
+		const leaf = inNewSplit
+			? workspace.splitActiveLeaf()
+			: workspace.getUnpinnedLeaf();
+		await leaf.openFile(existingFile);
+
+		activeFile.setFile(existingFile);
+		workspace.setActiveLeaf(leaf, true, true);
+	}
+
+	async openOrCreateDailyNote(
+		date: Moment,
+		inNewSplit: boolean
+	): Promise<void> {
+		const { workspace } = this.app;
+		const existingFile = getDailyNote(date, get(dailyNotes));
+		if (!existingFile) {
+			// File doesn't exist
+			tryToCreateDailyNote(
+				date,
+				inNewSplit,
+				this.settings,
+				(dailyNote: TFile) => {
+					activeFile.setFile(dailyNote);
+				}
+			);
+			return;
+		}
+
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const mode = (this.app.vault as any).getConfig("defaultViewMode");
+		const leaf = inNewSplit
+			? workspace.splitActiveLeaf()
+			: workspace.getUnpinnedLeaf();
+		await leaf.openFile(existingFile, { active: true, mode } as any);
+
+		activeFile.setFile(existingFile);
 	}
 }
