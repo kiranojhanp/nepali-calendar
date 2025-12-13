@@ -30,6 +30,6 @@ export default {
 			include: "node_modules/**",
 		}),
 		// Minify the bundle when building for production (not DEV)
-		...(env.env === "DEV" || process.env.NODE_ENV === "development" ? [] : [terser()]),
+		// ...(env.env === "DEV" || process.env.NODE_ENV === "development" ? [] : [terser()]),
 	],
 };
