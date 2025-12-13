@@ -67,14 +67,10 @@ function createDailyNotesStore() {
 				hasError = false;
 			} catch (err) {
 				if (!hasError) {
-					// Avoid error being shown multiple times
-					console.log(
-						"[Calendar] Failed to find daily notes folder",
-						err
-					);
+					// Silently handle error - folder may not exist yet
+					hasError = true;
 				}
 				store.set({});
-				hasError = true;
 			}
 		},
 		...store,
@@ -92,14 +88,10 @@ function createWeeklyNotesStore() {
 				hasError = false;
 			} catch (err) {
 				if (!hasError) {
-					// Avoid error being shown multiple times
-					console.log(
-						"[Calendar] Failed to find weekly notes folder",
-						err
-					);
+					// Silently handle error - weekly notes may not be configured
+					hasError = true;
 				}
 				store.set({});
-				hasError = true;
 			}
 		},
 		...store,

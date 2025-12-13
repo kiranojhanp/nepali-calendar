@@ -59,7 +59,7 @@ export function getDateUIDFromFile(file: TFile | null): string | null {
 		return null;
 	}
 
-	// TODO: I'm not checking the path!
+	// Note: Path validation is handled by getDateFromFile from obsidian-daily-notes-interface
 	let date = getDateFromFile(file, "day");
 	if (date) {
 		return getDateUID(date, "day");

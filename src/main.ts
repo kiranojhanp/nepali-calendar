@@ -10,6 +10,9 @@ import {
 import type { ISettings } from "./settings";
 import CalendarView from "./view";
 
+/**
+ * Global type extensions for Obsidian app context
+ */
 declare global {
 	interface Window {
 		app: App;
@@ -18,28 +21,41 @@ declare global {
 	}
 }
 
+/**
+ * Main plugin class for the Nepali Calendar
+ * Manages calendar view lifecycle and plugin commands
+ */
 export default class CalendarPlugin extends Plugin {
 	public options!: ISettings;
 	private view!: CalendarView;
 
+	/**
+	 * Clean up when plugin is disabled
+	 */
 	onunload(): void {
 		this.app.workspace
 			.getLeavesOfType(VIEW_TYPE_CALENDAR)
 			.forEach((leaf) => leaf.detach());
 	}
 
+	/**
+	 * Initialize plugin on load
+	 */
 	async onload(): Promise<void> {
+		// Subscribe to settings changes
 		this.register(
 			settings.subscribe((value) => {
 				this.options = value;
 			})
 		);
 
+		// Register the calendar view
 		this.registerView(
 			VIEW_TYPE_CALENDAR,
 			(leaf: WorkspaceLeaf) => (this.view = new CalendarView(leaf))
 		);
 
+		// Command: Open calendar view
 		this.addCommand({
 			id: "show-calendar-view",
 			name: "Open Nepali Calendar",
@@ -54,6 +70,7 @@ export default class CalendarPlugin extends Plugin {
 			},
 		});
 
+		// Command: Open weekly note (requires Periodic Notes plugin)
 		this.addCommand({
 			id: "open-weekly-note",
 			name: "Open Weekly Note",
@@ -65,6 +82,7 @@ export default class CalendarPlugin extends Plugin {
 			},
 		});
 
+		// Command: Reveal the active note in calendar
 		this.addCommand({
 			id: "reveal-active-note",
 			name: "Reveal active note",
@@ -75,10 +93,10 @@ export default class CalendarPlugin extends Plugin {
 
 		this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
+		// Initialize calendar view when workspace is ready
 		if (this.app.workspace.layoutReady) {
 			this.initLeaf();
 		} else {
-			// 'layout-ready' is not present in the typed workspace events; cast to any
 			this.registerEvent(
 				this.app.workspace.on(
 					"layout-ready" as any,
@@ -88,6 +106,9 @@ export default class CalendarPlugin extends Plugin {
 		}
 	}
 
+	/**
+	 * Initialize calendar view in right sidebar
+	 */
 	initLeaf(): void {
 		if (this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR).length) {
 			return;
@@ -100,6 +121,9 @@ export default class CalendarPlugin extends Plugin {
 		}
 	}
 
+	/**
+	 * Load plugin settings from disk
+	 */
 	async loadOptions(): Promise<void> {
 		const options = await this.loadData();
 		settings.update((old) => {
@@ -112,6 +136,9 @@ export default class CalendarPlugin extends Plugin {
 		await this.saveData(this.options);
 	}
 
+	/**
+	 * Update and persist plugin settings
+	 */
 	async writeOptions(
 		changeOpts: (settings: ISettings) => Partial<ISettings>
 	): Promise<void> {

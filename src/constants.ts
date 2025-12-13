@@ -1,3 +1,7 @@
+/**
+ * Global constants for the Nepali Calendar plugin
+ */
+
 export const DEFAULT_WEEK_FORMAT = "gggg-[W]ww";
 export const DEFAULT_WORDS_PER_DOT = 250;
 export const NUM_MAX_DOTS = 5;
