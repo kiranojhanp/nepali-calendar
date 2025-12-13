@@ -1,14 +1,59 @@
+import type { Moment } from "moment";
 import type { TFile } from "obsidian";
-import {
-	getAllDailyNotes,
-	getAllWeeklyNotes,
-} from "obsidian-daily-notes-interface";
-import { writable } from "svelte/store";
+import { normalizePath } from "obsidian";
+import { writable, get } from "svelte/store";
 
 import { defaultSettings } from "src/settings";
 import type { ISettings } from "src/settings";
 
 import { getDateUIDFromFile } from "./utils";
+
+/**
+ * Get all daily notes using custom plugin settings
+ */
+function getAllDailyNotesCustom(settings: ISettings): Record<string, TFile> {
+	const { vault } = window.app;
+	const { moment } = window;
+	const format = settings.dailyNoteFormat || "YYYY-MM-DD";
+	const folder = settings.dailyNoteFolder;
+
+	const dailyNotes: Record<string, TFile> = {};
+
+	// Get all markdown files from the specified folder
+	const files = folder
+		? vault.getMarkdownFiles().filter((file) => {
+				const normalizedFolder = normalizePath(folder);
+				return file.path.startsWith(normalizedFolder + "/");
+		  })
+		: vault.getMarkdownFiles();
+
+	// Try to parse each file as a daily note
+	for (const file of files) {
+		const basename = file.basename;
+		const date: Moment = moment(basename, format, true);
+
+		if (date.isValid()) {
+			const dateString = date.format(format);
+			dailyNotes[dateString] = file;
+		}
+	}
+
+	return dailyNotes;
+}
+
+/**
+ * Get all weekly notes (still using daily-notes-interface for compatibility)
+ */
+function getAllWeeklyNotesFromInterface(): Record<string, TFile> {
+	try {
+		// Try to use obsidian-daily-notes-interface if available
+		const { getAllWeeklyNotes } = require("obsidian-daily-notes-interface");
+		return getAllWeeklyNotes();
+	} catch {
+		// If not available, return empty
+		return {};
+	}
+}
 
 function createDailyNotesStore() {
 	let hasError = false;
@@ -16,7 +61,8 @@ function createDailyNotesStore() {
 	return {
 		reindex: () => {
 			try {
-				const dailyNotes = getAllDailyNotes();
+				const currentSettings = get(settings);
+				const dailyNotes = getAllDailyNotesCustom(currentSettings);
 				store.set(dailyNotes);
 				hasError = false;
 			} catch (err) {
@@ -41,7 +87,7 @@ function createWeeklyNotesStore() {
 	return {
 		reindex: () => {
 			try {
-				const weeklyNotes = getAllWeeklyNotes();
+				const weeklyNotes = getAllWeeklyNotesFromInterface();
 				store.set(weeklyNotes);
 				hasError = false;
 			} catch (err) {

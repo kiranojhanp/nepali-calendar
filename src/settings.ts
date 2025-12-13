@@ -11,13 +11,16 @@ export interface ISettings {
 	weekStart: IWeekStartOption;
 	shouldConfirmBeforeCreate: boolean;
 
+	// Daily Note settings
+	dailyNoteFormat: string;
+	dailyNoteFolder: string;
+	dailyNoteTemplate: string;
+
 	// Weekly Note settings
 	showWeeklyNote: boolean;
 	weeklyNoteFormat: string;
 	weeklyNoteTemplate: string;
 	weeklyNoteFolder: string;
-
-	localeOverride: ILocaleOverride;
 }
 
 const weekdays = [
@@ -32,16 +35,19 @@ const weekdays = [
 
 export const defaultSettings = Object.freeze({
 	shouldConfirmBeforeCreate: true,
-	weekStart: "locale" as IWeekStartOption,
+	weekStart: "sunday" as IWeekStartOption,
 
 	wordsPerDot: DEFAULT_WORDS_PER_DOT,
+
+	// Daily Note defaults
+	dailyNoteFormat: "YYYY-MM-DD",
+	dailyNoteFolder: "",
+	dailyNoteTemplate: "",
 
 	showWeeklyNote: false,
 	weeklyNoteFormat: "",
 	weeklyNoteTemplate: "",
 	weeklyNoteFolder: "",
-
-	localeOverride: "system-default",
 });
 
 export function appHasPeriodicNotesPluginLoaded(): boolean {
@@ -74,11 +80,18 @@ export class CalendarSettingsTab extends PluginSettingTab {
 		}
 
 		this.containerEl.createEl("h3", {
+			text: "Daily Note Settings",
+		});
+		this.addDailyNoteFormatSetting();
+		this.addDailyNoteFolderSetting();
+		this.addDailyNoteTemplateSetting();
+		this.addConfirmCreateSetting();
+
+		this.containerEl.createEl("h3", {
 			text: "General Settings",
 		});
 		this.addDotThresholdSetting();
 		this.addWeekStartSetting();
-		this.addConfirmCreateSetting();
 		this.addShowWeeklyNoteSetting();
 
 		if (
@@ -96,11 +109,6 @@ export class CalendarSettingsTab extends PluginSettingTab {
 			this.addWeeklyNoteTemplateSetting();
 			this.addWeeklyNoteFolderSetting();
 		}
-
-		this.containerEl.createEl("h3", {
-			text: "Advanced Settings",
-		});
-		this.addLocaleOverrideSetting();
 	}
 
 	addDotThresholdSetting(): void {
@@ -129,7 +137,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
 		new Setting(this.containerEl)
 			.setName("Start week on:")
 			.setDesc(
-				"Choose what day of the week to start. Select 'Locale default' to use the default specified by moment.js"
+				"Choose what day of the week to start. Default is Sunday for Nepal."
 			)
 			.addDropdown((dropdown) => {
 				dropdown.addOption(
@@ -220,30 +228,54 @@ export class CalendarSettingsTab extends PluginSettingTab {
 			});
 	}
 
-	addLocaleOverrideSetting(): void {
-		const { moment } = window;
-
-		const sysLocale = navigator.language?.toLowerCase();
-
+	addDailyNoteFormatSetting(): void {
 		new Setting(this.containerEl)
-			.setName("Override locale:")
+			.setName("Daily note format")
 			.setDesc(
-				"Set this if you want to use a locale different from the default"
+				"Format for daily note filenames. Use YYYY for year, MM for month, DD for day. Example: YYYY-MM-DD creates 2081-01-15.md"
 			)
-			.addDropdown((dropdown) => {
-				dropdown.addOption(
-					"system-default",
-					`Same as system (${sysLocale})`
-				);
-				moment.locales().forEach((locale) => {
-					dropdown.addOption(locale, locale);
-				});
-				dropdown.setValue(this.plugin.options.localeOverride);
-				dropdown.onChange(async (value) => {
-					this.plugin.writeOptions(() => ({
-						localeOverride: value as ILocaleOverride,
-					}));
-				});
+			.addText((text) => {
+				text.setPlaceholder("YYYY-MM-DD")
+					.setValue(this.plugin.options.dailyNoteFormat)
+					.onChange(async (value) => {
+						this.plugin.writeOptions(() => ({
+							dailyNoteFormat: value || "YYYY-MM-DD",
+						}));
+					});
+			});
+	}
+
+	addDailyNoteFolderSetting(): void {
+		new Setting(this.containerEl)
+			.setName("Daily note folder")
+			.setDesc(
+				"Folder where daily notes will be created. Leave empty for vault root."
+			)
+			.addText((text) => {
+				text.setPlaceholder("Example: daily-notes")
+					.setValue(this.plugin.options.dailyNoteFolder)
+					.onChange(async (value) => {
+						this.plugin.writeOptions(() => ({
+							dailyNoteFolder: value,
+						}));
+					});
+			});
+	}
+
+	addDailyNoteTemplateSetting(): void {
+		new Setting(this.containerEl)
+			.setName("Daily note template")
+			.setDesc(
+				"Template file to use when creating daily notes. Leave empty for default template."
+			)
+			.addText((text) => {
+				text.setPlaceholder("Example: templates/daily-note.md")
+					.setValue(this.plugin.options.dailyNoteTemplate)
+					.onChange(async (value) => {
+						this.plugin.writeOptions(() => ({
+							dailyNoteTemplate: value,
+						}));
+					});
 			});
 	}
 }

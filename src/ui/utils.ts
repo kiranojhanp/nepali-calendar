@@ -1,5 +1,7 @@
+import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import { getDateFromFile, getDateUID } from "obsidian-daily-notes-interface";
+import type { ISettings } from "src/settings";
 
 export const classList = (obj: Record<string, boolean>): string[] => {
 	return Object.entries(obj)
@@ -31,6 +33,19 @@ export function partition(
 	});
 
 	return [pass, fail];
+}
+
+/**
+ * Get a daily note by date using custom settings
+ */
+export function getDailyNoteCustom(
+	date: Moment,
+	dailyNotes: Record<string, TFile>,
+	settings: ISettings
+): TFile | null {
+	const format = settings.dailyNoteFormat || "YYYY-MM-DD";
+	const dateString = date.format(format);
+	return dailyNotes[dateString] || null;
 }
 
 /**

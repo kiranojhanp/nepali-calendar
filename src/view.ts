@@ -1,7 +1,5 @@
 import type { Moment } from "moment";
 import {
-	getDailyNote,
-	getDailyNoteSettings,
 	getDateFromFile,
 	getWeeklyNote,
 	getWeeklyNoteSettings,
@@ -23,6 +21,7 @@ import type { ISettings } from "src/settings";
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
 import { activeFile, dailyNotes, weeklyNotes, settings } from "./ui/stores";
+import { getDailyNoteCustom } from "./ui/utils";
 import {
 	customTagsSource,
 	streakSource,
@@ -134,8 +133,8 @@ export default class CalendarView extends ItemView {
 		if (!isMetaPressed) {
 			return;
 		}
-		const { format } = getDailyNoteSettings();
-		const note = getDailyNote(date, get(dailyNotes));
+		const format = this.settings.dailyNoteFormat || "YYYY-MM-DD";
+		const note = getDailyNoteCustom(date, get(dailyNotes), this.settings);
 		this.app.workspace.trigger(
 			"link-hover",
 			this,
@@ -165,7 +164,7 @@ export default class CalendarView extends ItemView {
 	}
 
 	private onContextMenuDay(date: Moment, event: MouseEvent): void {
-		const note = getDailyNote(date, get(dailyNotes));
+		const note = getDailyNoteCustom(date, get(dailyNotes), this.settings);
 		if (!note) {
 			// If no file exists for a given day, show nothing.
 			return;
@@ -317,7 +316,11 @@ export default class CalendarView extends ItemView {
 		inNewSplit: boolean
 	): Promise<void> {
 		const { workspace } = this.app;
-		const existingFile = getDailyNote(date, get(dailyNotes));
+		const existingFile = getDailyNoteCustom(
+			date,
+			get(dailyNotes),
+			this.settings
+		);
 		if (!existingFile) {
 			// File doesn't exist
 			tryToCreateDailyNote(

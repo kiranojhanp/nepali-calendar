@@ -1,12 +1,49 @@
 import type { Moment } from "moment";
-import type { TFile } from "obsidian";
-import {
-	createDailyNote,
-	getDailyNoteSettings,
-} from "obsidian-daily-notes-interface";
+import { TFile, normalizePath } from "obsidian";
 
 import type { ISettings } from "src/settings";
 import { createConfirmationDialog } from "src/ui/modal";
+
+/**
+ * Create a daily note file using custom settings
+ */
+async function createDailyNoteFile(
+	date: Moment,
+	settings: ISettings
+): Promise<TFile> {
+	const { vault } = window.app;
+	const format = settings.dailyNoteFormat || "YYYY-MM-DD";
+	const folder = settings.dailyNoteFolder;
+	const template = settings.dailyNoteTemplate;
+
+	const filename = date.format(format);
+	const normalizedPath = normalizePath(
+		folder ? `${folder}/${filename}.md` : `${filename}.md`
+	);
+
+	// Ensure folder exists
+	if (folder) {
+		const folderPath = normalizePath(folder);
+		if (!(await vault.adapter.exists(folderPath))) {
+			await vault.createFolder(folderPath);
+		}
+	}
+
+	// Get template content if specified
+	let content = "";
+	if (template) {
+		const templateFile = vault.getAbstractFileByPath(
+			normalizePath(template)
+		);
+		if (templateFile instanceof TFile) {
+			content = await vault.read(templateFile);
+		}
+	}
+
+	// Create the file
+	const file = await vault.create(normalizedPath, content);
+	return file;
+}
 
 /**
  * Create a Daily Note for a given date.
@@ -18,11 +55,11 @@ export async function tryToCreateDailyNote(
 	cb?: (newFile: TFile) => void
 ): Promise<void> {
 	const { workspace } = window.app;
-	const { format } = getDailyNoteSettings();
+	const format = settings.dailyNoteFormat || "YYYY-MM-DD";
 	const filename = date.format(format);
 
 	const createFile = async () => {
-		const dailyNote = await createDailyNote(date);
+		const dailyNote = await createDailyNoteFile(date, settings);
 		const leaf = inNewSplit
 			? workspace.splitActiveLeaf()
 			: workspace.getUnpinnedLeaf();
