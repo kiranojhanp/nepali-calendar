@@ -32,13 +32,13 @@
   import type { ICalendarSource } from "obsidian-calendar-ui";
 
   export let displayedMonth: Moment;
-  export let sources: ICalendarSource[];
+  // export let sources: ICalendarSource[];
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => boolean;
-  export let onHoverWeek: (date: Moment, targetEl: EventTarget) => boolean;
+  // export let onHoverWeek: (date: Moment, targetEl: EventTarget) => boolean;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
+  // export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
   export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
-  export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
+  // export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
 
   let todayNepali = getCurrentNepaliDate();
   let currentMonthNepali: NepaliDate = { ...todayNepali, day: 1 };

@@ -1,5 +1,6 @@
 import type { Moment, WeekSpec } from "moment";
-import { App, Plugin, WorkspaceLeaf } from "obsidian";
+import { Plugin } from "obsidian";
+import type { App, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { settings } from "./ui/stores";

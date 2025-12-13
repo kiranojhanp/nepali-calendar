@@ -4,13 +4,8 @@ import {
 	getWeeklyNote,
 	getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
-import {
-	FileView,
-	TFile,
-	ItemView,
-	WorkspaceLeaf,
-	TAbstractFile,
-} from "obsidian";
+import { FileView, TFile, ItemView } from "obsidian";
+import type { WorkspaceLeaf, TAbstractFile } from "obsidian";
 import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
@@ -108,12 +103,12 @@ export default class CalendarView extends ItemView {
 			target: (this as any).contentEl,
 			props: {
 				onClickDay: this.openOrCreateDailyNote,
-				onClickWeek: this.openOrCreateWeeklyNote,
+				// onClickWeek: this.openOrCreateWeeklyNote,
 				onHoverDay: this.onHoverDay,
-				onHoverWeek: this.onHoverWeek,
+				// onHoverWeek: this.onHoverWeek,
 				onContextMenuDay: this.onContextMenuDay,
-				onContextMenuWeek: this.onContextMenuWeek,
-				sources,
+				// onContextMenuWeek: this.onContextMenuWeek,
+				// sources,
 			},
 		});
 	}
