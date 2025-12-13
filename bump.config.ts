@@ -13,7 +13,7 @@ export default defineConfig({
 	confirm: true,
 
 	// Execute build before committing
-	execute: "npm run build:prod",
+	execute: "bun run build:prod",
 
 	// Don't run install after version bump
 	install: false,
