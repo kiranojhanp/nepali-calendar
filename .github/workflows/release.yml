@@ -1,0 +1,57 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - "*"
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build production
+              run: npm run build:prod
+
+            - name: Copy release artifacts
+              run: |
+                  mkdir -p release
+                  cp dist/main.js release/
+                  cp dist/manifest.json release/
+                  cp dist/styles.css release/
+
+            - name: Create GitHub Release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  TAG_NAME=${GITHUB_REF#refs/tags/}
+
+                  # Extract release notes from the tag annotation or use default
+                  RELEASE_NOTES=$(git tag -l --format='%(contents)' $TAG_NAME)
+                  if [ -z "$RELEASE_NOTES" ]; then
+                    RELEASE_NOTES="Release version $TAG_NAME"
+                  fi
+
+                  # Create release using GitHub CLI
+                  gh release create "$TAG_NAME" \
+                    --title "$TAG_NAME" \
+                    --notes "$RELEASE_NOTES" \
+                    release/main.js \
+                    release/manifest.json \
+                    release/styles.css

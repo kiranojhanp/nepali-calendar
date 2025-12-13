@@ -1,12 +1,17 @@
 {
 	"name": "nepali-calendar",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"description": "Nepali Calendar view for Obsidian",
 	"main": "dist/main.js",
 	"scripts": {
 		"dev": "rollup -c -w",
 		"build": "tsc -noEmit -skipLibCheck && rollup -c",
-		"build:prod": "NODE_ENV=production npm run build && esbuild styles.css --minify --outfile=dist/styles.css",
+		"build:prod": "NODE_ENV=production npm run build && esbuild styles.css --minify --outfile=dist/styles.css && npm run postbuild",
+		"postbuild": "cp dist/manifest.json . && cp dist/styles.css .",
+		"release": "bumpp",
+		"release:patch": "bumpp patch",
+		"release:minor": "bumpp minor",
+		"release:major": "bumpp major",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"dependencies": {
@@ -27,6 +32,7 @@
 		"@typescript-eslint/eslint-plugin": "4.20.0",
 		"@typescript-eslint/parser": "4.20.0",
 		"builtin-modules": "3.3.0",
+		"bumpp": "^10.3.2",
 		"esbuild": "0.17.3",
 		"eslint": "7.23.0",
 		"jest": "26.6.3",
