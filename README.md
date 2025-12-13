@@ -1,5 +1,7 @@
 # Nepali Calendar for Obsidian
 
+![Nepali Calendar Screenshot](images/main-screenshot.png)
+
 Hi there! 👋 This plugin brings the **Bikram Sambat (BS)** calendar system right into Obsidian. It's designed to help you manage your daily notes using Nepali dates, making it perfect for anyone who organizes their life around the BS calendar.
 
 ## Features
@@ -29,3 +31,7 @@ Alternatively, for manual installation:
 ---
 
 _Enjoying the plugin? Feel free to report issues or suggest features on GitHub!_
+
+## Acknowledgements
+
+This plugin is heavily inspired by and based on the code from the [Obsidian Calendar Plugin](https://github.com/liamcain/obsidian-calendar-plugin) by [Liam Cain](https://github.com/liamcain). Huge thanks to Liam for the amazing work!
