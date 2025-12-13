@@ -11,6 +11,7 @@
 		"postbuild": "cp manifest.json styles.css dist/ && mkdir -p \"$HOME/main-vault/kiran-vault/.obsidian/plugins/nepali-calendar\" && cp -R dist/* \"$HOME/main-vault/kiran-vault/.obsidian/plugins/nepali-calendar/\""
 	},
 	"dependencies": {
+		"bikram-sambat": "^1.8.0",
 		"obsidian": "obsidianmd/obsidian-api#master",
 		"obsidian-calendar-ui": "0.3.12",
 		"obsidian-daily-notes-interface": "0.9.0",
