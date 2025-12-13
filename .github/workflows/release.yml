@@ -4,6 +4,7 @@ on:
     push:
         tags:
             - "*"
+    workflow_dispatch:
 
 env:
     PLUGIN_NAME: nepali-calendar
@@ -11,6 +12,8 @@ env:
 jobs:
     build:
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
 
         steps:
             - uses: actions/checkout@v3
