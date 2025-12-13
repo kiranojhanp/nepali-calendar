@@ -53,17 +53,19 @@
   });
 </script>
 
-<CalendarBase
-  {sources}
-  {today}
-  {onHoverDay}
-  {onHoverWeek}
-  {onContextMenuDay}
-  {onContextMenuWeek}
-  {onClickDay}
-  {onClickWeek}
-  bind:displayedMonth
-  localeData={today.localeData()}
-  selectedId={$activeFile}
-  showWeekNums={$settings.showWeeklyNote}
-/>
+<div id="calendar-container">
+  <CalendarBase
+    {sources}
+    {today}
+    {onHoverDay}
+    {onHoverWeek}
+    {onContextMenuDay}
+    {onContextMenuWeek}
+    {onClickDay}
+    {onClickWeek}
+    bind:displayedMonth
+    localeData={today.localeData()}
+    selectedId={$activeFile}
+    showWeekNums={$settings.showWeeklyNote}
+  />
+</div>

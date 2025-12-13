@@ -6,7 +6,13 @@ import {
 	getWeeklyNote,
 	getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
-import { FileView, TFile, ItemView, WorkspaceLeaf, TAbstractFile } from "obsidian";
+import {
+	FileView,
+	TFile,
+	ItemView,
+	WorkspaceLeaf,
+	TAbstractFile,
+} from "obsidian";
 import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
@@ -53,10 +59,18 @@ export default class CalendarView extends ItemView {
 				this.onNoteSettingsUpdate
 			)
 		);
-		this.registerEvent(this.app.vault.on(("create" as any), this.onFileCreated));
-		this.registerEvent(this.app.vault.on(("delete" as any), this.onFileDeleted));
-		this.registerEvent(this.app.vault.on(("modify" as any), this.onFileModified));
-		this.registerEvent(this.app.workspace.on(("file-open" as any), this.onFileOpen));
+		this.registerEvent(
+			this.app.vault.on("create" as any, this.onFileCreated)
+		);
+		this.registerEvent(
+			this.app.vault.on("delete" as any, this.onFileDeleted)
+		);
+		this.registerEvent(
+			this.app.vault.on("modify" as any, this.onFileModified)
+		);
+		this.registerEvent(
+			this.app.workspace.on("file-open" as any, this.onFileOpen)
+		);
 		settings.subscribe((val) => {
 			this.settings = val;
 
@@ -72,7 +86,7 @@ export default class CalendarView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return "Calendar";
+		return "Nepali Calendar";
 	}
 
 	getIcon(): string {

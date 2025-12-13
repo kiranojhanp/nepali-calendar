@@ -3,7 +3,10 @@ import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { settings } from "./ui/stores";
-import { appHasPeriodicNotesPluginLoaded, CalendarSettingsTab } from "./settings";
+import {
+	appHasPeriodicNotesPluginLoaded,
+	CalendarSettingsTab,
+} from "./settings";
 import type { ISettings } from "./settings";
 import CalendarView from "./view";
 
@@ -39,7 +42,7 @@ export default class CalendarPlugin extends Plugin {
 
 		this.addCommand({
 			id: "show-calendar-view",
-			name: "Open view",
+			name: "Open Nepali Calendar",
 			checkCallback: (checking: boolean) => {
 				if (checking) {
 					return (
@@ -77,7 +80,10 @@ export default class CalendarPlugin extends Plugin {
 		} else {
 			// 'layout-ready' is not present in the typed workspace events; cast to any
 			this.registerEvent(
-				this.app.workspace.on(("layout-ready" as any), this.initLeaf.bind(this))
+				this.app.workspace.on(
+					"layout-ready" as any,
+					this.initLeaf.bind(this)
+				)
 			);
 		}
 	}

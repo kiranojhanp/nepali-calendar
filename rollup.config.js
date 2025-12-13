@@ -4,6 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import autoPreprocess from "svelte-preprocess";
 import { env } from "process";
+import { terser } from "rollup-plugin-terser";
 
 export default {
 	input: "src/main.ts",
@@ -18,7 +19,9 @@ export default {
 			emitCss: false,
 			preprocess: autoPreprocess(),
 		}),
-		typescript({ sourceMap: env.env === "DEV" }),
+		// Use source maps for development. The repo used `env.env === "DEV"` previously;
+		// also respect NODE_ENV for a more common convention.
+		typescript({ sourceMap: env.env === "DEV" || process.env.NODE_ENV === "development" }),
 		resolve({
 			browser: true,
 			dedupe: ["svelte"],
@@ -26,5 +29,7 @@ export default {
 		commonjs({
 			include: "node_modules/**",
 		}),
+		// Minify the bundle when building for production (not DEV)
+		...(env.env === "DEV" || process.env.NODE_ENV === "development" ? [] : [terser()]),
 	],
 };

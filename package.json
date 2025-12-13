@@ -1,37 +1,43 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "nepali-calendar",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Nepali Calendar view for Obsidian",
 	"main": "dist/main.js",
 	"scripts": {
 		"dev": "rollup -c -w",
 		"build": "tsc -noEmit -skipLibCheck && rollup -c",
+		"build:prod": "NODE_ENV=production npm run build && esbuild styles.css --minify --outfile=dist/styles.css",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"postbuild": "cp manifest.json styles.css dist/"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "MIT",
-	"devDependencies": {
-		"@rollup/plugin-commonjs": "^29.0.0",
-		"@rollup/plugin-node-resolve": "^16.0.3",
-		"@rollup/plugin-typescript": "^12.3.0",
-		"@tsconfig/svelte": "^5.0.6",
-		"@types/node": "^16.11.6",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
-		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
-		"obsidian": "latest",
-		"rollup-plugin-svelte": "^7.2.3",
-		"svelte-preprocess": "^6.0.3",
-		"tslib": "2.4.0",
-		"typescript": "^5.3.0",
-		"@types/jest": "^29.5.4"
+		"postbuild": "cp manifest.json styles.css dist/ && mkdir -p \"$HOME/main-vault/kiran-vault/.obsidian/plugins/nepali-calendar\" && cp -R dist/* \"$HOME/main-vault/kiran-vault/.obsidian/plugins/nepali-calendar/\""
 	},
 	"dependencies": {
-		"obsidian-calendar-ui": "^0.4.0",
-		"obsidian-daily-notes-interface": "^0.9.4",
-		"svelte": "^5.45.10"
+		"obsidian": "obsidianmd/obsidian-api#master",
+		"obsidian-calendar-ui": "0.3.12",
+		"obsidian-daily-notes-interface": "0.9.0",
+		"svelte": "3.35.0",
+		"tslib": "2.1.0"
+	},
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "18.0.0",
+		"@rollup/plugin-node-resolve": "11.2.1",
+		"@rollup/plugin-typescript": "8.2.1",
+		"@tsconfig/svelte": "1.0.10",
+		"@types/jest": "26.0.22",
+		"@types/moment": "2.13.0",
+		"@typescript-eslint/eslint-plugin": "4.20.0",
+		"@typescript-eslint/parser": "4.20.0",
+		"builtin-modules": "3.3.0",
+		"esbuild": "0.17.3",
+		"eslint": "7.23.0",
+		"jest": "26.6.3",
+		"moment": "2.29.1",
+		"rollup": "2.44.0",
+		"rollup-plugin-svelte": "7.1.0",
+		"rollup-plugin-terser": "^7.0.2",
+		"svelte-check": "1.3.0",
+		"svelte-jester": "1.3.2",
+		"svelte-preprocess": "^6.0.3",
+		"ts-jest": "26.5.4",
+		"typescript": "^5.9.3"
 	}
 }

@@ -6,24 +6,24 @@ A calendar plugin for [Obsidian](https://obsidian.md/) that displays and manages
 
 ## Features
 
-- **Nepali Calendar View**: Display a calendar using the Bikram Sambat (BS) calendar system
-- **Dual Calendar Display**: Show both Nepali and English (Gregorian) month names simultaneously
-- **Daily Notes Integration**: Create and navigate daily notes based on Nepali dates
-- **Visual Indicators**: 
-  - Highlight today's date
-  - Show dots for days that have notes
-- **Quick Navigation**: 
-  - Navigate between months easily
-  - Jump to today with a single click
-  - Click on any day to open or create a daily note
-- **Keyboard Shortcuts**: 
-  - Ctrl/Cmd + Click to open notes in a new pane
-  - Ctrl/Cmd + Hover to preview notes
-- **Customizable Settings**:
-  - Configure date format for daily notes
-  - Set folder location for daily notes
-  - Toggle confirmation before creating new notes
-  - Show/hide Nepali or English month names
+-   **Nepali Calendar View**: Display a calendar using the Bikram Sambat (BS) calendar system
+-   **Dual Calendar Display**: Show both Nepali and English (Gregorian) month names simultaneously
+-   **Daily Notes Integration**: Create and navigate daily notes based on Nepali dates
+-   **Visual Indicators**:
+    -   Highlight today's date
+    -   Show dots for days that have notes
+-   **Quick Navigation**:
+    -   Navigate between months easily
+    -   Jump to today with a single click
+    -   Click on any day to open or create a daily note
+-   **Keyboard Shortcuts**:
+    -   Ctrl/Cmd + Click to open notes in a new pane
+    -   Ctrl/Cmd + Hover to preview notes
+-   **Customizable Settings**:
+    -   Configure date format for daily notes
+    -   Set folder location for daily notes
+    -   Toggle confirmation before creating new notes
+    -   Show/hide Nepali or English month names
 
 ## Installation
 
@@ -56,16 +56,16 @@ After enabling the plugin, you can open the calendar view in several ways:
 
 1. Click on any day in the calendar
 2. If the note doesn't exist:
-   - A confirmation dialog will appear (if enabled in settings)
-   - Click "Create" to create a new daily note for that date
+    - A confirmation dialog will appear (if enabled in settings)
+    - Click "Create" to create a new daily note for that date
 3. If the note exists, it will open immediately
 
 ### Navigation
 
-- **Previous/Next Month**: Click the `‹` and `›` buttons
-- **Today**: Click the "Today" button to jump to the current month
-- **Open in New Pane**: Hold Ctrl/Cmd while clicking a day to open the note in a new pane
-- **Preview Notes**: Hold Ctrl/Cmd while hovering over a day to preview the note
+-   **Previous/Next Month**: Click the `‹` and `›` buttons
+-   **Today**: Click the "Today" button to jump to the current month
+-   **Open in New Pane**: Hold Ctrl/Cmd while clicking a day to open the note in a new pane
+-   **Preview Notes**: Hold Ctrl/Cmd while hovering over a day to preview the note
 
 ### Daily Note Format
 
@@ -75,7 +75,6 @@ Daily notes are created with the following default content:
 # Baisakh 15, 2081
 
 **English Date:** Monday, April 28, 2024
-
 ```
 
 ## Settings
@@ -85,11 +84,12 @@ Daily notes are created with the following default content:
 Specify the date format for your daily note filenames. The default is `YYYY-MM-DD` which creates files like `2081-01-15.md`.
 
 **Available format tokens:**
-- `YYYY` - 4-digit year (e.g., 2081)
-- `MM` - 2-digit month (e.g., 01)
-- `DD` - 2-digit day (e.g., 15)
-- `MMMM` - Full month name (e.g., Baisakh)
-- `M` - Month number without padding (e.g., 1)
+
+-   `YYYY` - 4-digit year (e.g., 2081)
+-   `MM` - 2-digit month (e.g., 01)
+-   `DD` - 2-digit day (e.g., 15)
+-   `MMMM` - Full month name (e.g., Baisakh)
+-   `M` - Month number without padding (e.g., 1)
 
 ### Daily Note Folder
 
@@ -111,22 +111,23 @@ Toggle the display of English (Gregorian) month names alongside Nepali month nam
 
 The Bikram Sambat (BS) calendar is the official calendar of Nepal. Key features:
 
-- **Year Offset**: Nepali year is approximately 56-57 years ahead of the Gregorian year
-- **Months**: 12 months with varying days (29-32 days per month)
-- **New Year**: Typically starts in mid-April of the Gregorian calendar
-- **Month Names**: Baisakh, Jestha, Ashadh, Shrawan, Bhadra, Ashwin, Kartik, Mangsir, Poush, Magh, Falgun, Chaitra
+-   **Year Offset**: Nepali year is approximately 56-57 years ahead of the Gregorian year
+-   **Months**: 12 months with varying days (29-32 days per month)
+-   **New Year**: Typically starts in mid-April of the Gregorian calendar
+-   **Month Names**: Baisakh, Jestha, Ashadh, Shrawan, Bhadra, Ashwin, Kartik, Mangsir, Poush, Magh, Falgun, Chaitra
 
 ### Supported Date Range
 
 The plugin currently supports Nepali dates from:
-- **2080 BS** (April 14, 2023 AD) to **2090 BS** (approximately 2033 AD)
+
+-   **2080 BS** (April 14, 2023 AD) to **2090 BS** (approximately 2033 AD)
 
 ## Commands
 
 The plugin adds the following commands to the Command Palette:
 
-- **Nepali Calendar: Open calendar view** - Opens or reveals the calendar view
-- **Nepali Calendar: Open today's daily note** - Opens or creates today's daily note
+-   **Nepali Calendar: Open calendar view** - Opens or reveals the calendar view
+-   **Nepali Calendar: Open today's daily note** - Opens or creates today's daily note
 
 ## Customization
 
@@ -136,15 +137,15 @@ You can customize the appearance of the calendar by adding custom CSS to your `o
 
 ```css
 .nepali-calendar-container {
-  /* Customize calendar container */
+	/* Customize calendar container */
 }
 
 .calendar-day-today {
-  /* Customize today's date appearance */
+	/* Customize today's date appearance */
 }
 
 .calendar-day-has-note {
-  /* Customize days with notes */
+	/* Customize days with notes */
 }
 ```
 
@@ -152,8 +153,8 @@ You can customize the appearance of the calendar by adding custom CSS to your `o
 
 ### Prerequisites
 
-- Node.js (v16 or higher)
-- npm
+-   Node.js (v16 or higher)
+-   npm
 
 ### Building from Source
 
@@ -172,6 +173,20 @@ npm run build
 npm run dev
 ```
 
+### Production build (minified)
+
+To produce a minified production build (smaller `dist/main.js`), run:
+
+```bash
+# macOS / Linux (zsh/bash)
+npm run build:prod
+# For Windows or cross-platform usage consider using `cross-env` to set NODE_ENV
+```
+
+Notes:
+
+-   The `build:prod` script will also minify `styles.css` and place the result at `dist/styles.css` (uses `esbuild --minify`).
+
 ### Project Structure
 
 ```
@@ -188,22 +203,22 @@ nepali-calendar/
 
 ## Compatibility
 
-- **Obsidian Version**: Requires Obsidian v0.15.0 or higher
-- **Platform**: Works on Desktop and Mobile
+-   **Obsidian Version**: Requires Obsidian v0.15.0 or higher
+-   **Platform**: Works on Desktop and Mobile
 
 ## Known Limitations
 
-- The Nepali calendar data is pre-defined for years 2080-2090 BS
-- Date conversions may have minor variations (±1 day) due to astronomical calculations
+-   The Nepali calendar data is pre-defined for years 2080-2090 BS
+-   Date conversions may have minor variations (±1 day) due to astronomical calculations
 
 ## Roadmap
 
-- [ ] Extended date range support (add more years)
-- [ ] Weekly notes support
-- [ ] Custom templates for daily notes
-- [ ] Import/export calendar events
-- [ ] Multi-language support (Nepali/English)
-- [ ] Integration with other Nepali date plugins
+-   [ ] Extended date range support (add more years)
+-   [ ] Weekly notes support
+-   [ ] Custom templates for daily notes
+-   [ ] Import/export calendar events
+-   [ ] Multi-language support (Nepali/English)
+-   [ ] Integration with other Nepali date plugins
 
 ## Support
 
@@ -223,9 +238,9 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ## Acknowledgments
 
-- Inspired by [obsidian-calendar-plugin](https://github.com/liamcain/obsidian-calendar-plugin)
-- Nepali calendar conversion algorithms based on standard BS calendar data
-- Built with the [Obsidian API](https://github.com/obsidianmd/obsidian-api)
+-   Inspired by [obsidian-calendar-plugin](https://github.com/liamcain/obsidian-calendar-plugin)
+-   Nepali calendar conversion algorithms based on standard BS calendar data
+-   Built with the [Obsidian API](https://github.com/obsidianmd/obsidian-api)
 
 ## Credits
 
@@ -234,4 +249,3 @@ Developed by [kiranojhanp](https://github.com/kiranojhanp)
 ---
 
 **Note**: This plugin is not affiliated with or endorsed by Obsidian.md or the Nepali government. The Nepali calendar conversions are provided as-is and should be verified for critical applications.
-
