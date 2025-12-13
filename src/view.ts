@@ -73,6 +73,9 @@ export default class CalendarView extends ItemView {
 		settings.subscribe((val) => {
 			this.settings = val;
 
+			// Reindex daily notes if format or folder changed
+			dailyNotes.reindex();
+
 			// Refresh the calendar if settings change
 			if (this.calendar) {
 				this.calendar.tick();

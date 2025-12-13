@@ -89,6 +89,22 @@
 	background-color: var(--interactive-accent);
 }
 
+#calendar-container .day.has-note {
+	font-weight: bold;
+}
+
+#calendar-container .day.has-note::after {
+	content: '';
+	position: absolute;
+	bottom: 2px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 4px;
+	height: 4px;
+	background-color: var(--interactive-accent);
+	border-radius: 50%;
+}
+
 /* Nav styles */
 #calendar-container nav {
 	align-items: center;

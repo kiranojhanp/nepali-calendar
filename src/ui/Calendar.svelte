@@ -35,8 +35,26 @@
   let todayNepali = getCurrentNepaliDate();
   let currentMonthNepali: NepaliDate = { ...todayNepali, day: 1 };
   
-  // Nepali short day names
-  const nepaliDaysShort = ['आइत', 'सोम', 'मंगल', 'बुध', 'बिही', 'शुक्र', 'शनि'];
+  // Map weekStart to day offset (0=Sunday, 1=Monday, etc.)
+  const weekStartMap: Record<string, number> = {
+    sunday: 0,
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
+    locale: 0 // Default to Sunday if locale not available
+  };
+
+  // Get week start offset from settings
+  $: weekStartOffset = weekStartMap[$settings.weekStart] || 0;
+
+  // Reorder day names based on week start
+  $: nepaliDaysShortOrdered = (() => {
+    const days = ['आइत', 'सोम', 'मंगल', 'बुध', 'बिही', 'शुक्र', 'शनि'];
+    return [...days.slice(weekStartOffset), ...days.slice(0, weekStartOffset)];
+  })();
 
   // Sync displayedMonth (Gregorian) with currentMonthNepali
   $: if (displayedMonth) {
@@ -51,17 +69,20 @@
 
   // Make calendar reactive to both month changes and active file changes
   $: {
-      generateCalendarDays(currentMonthNepali);
+      generateCalendarDays(currentMonthNepali, weekStartOffset);
       // Reference $activeFile to ensure re-render when active file changes
       void $activeFile;
   }
 
-  function generateCalendarDays(date: NepaliDate) {
+  function generateCalendarDays(date: NepaliDate, weekStart: number) {
       const { year, month } = date;
       const daysInMonth = getDaysInNepaliMonth(year, month);
       const firstDay = { year, month, day: 1 };
       const firstDayGregorian = nepaliToGregorian(firstDay);
-      const startDayOfWeek = firstDayGregorian.getDay(); // 0 = Sunday
+      let startDayOfWeek = firstDayGregorian.getDay(); // 0 = Sunday
+
+      // Adjust for week start setting
+      startDayOfWeek = (startDayOfWeek - weekStart + 7) % 7;
 
       const days = [];
 
@@ -130,6 +151,13 @@
           onClickDay(day.gregorian, event.metaKey || event.ctrlKey);
       }
   }
+
+  // Check if a day has a note
+  function hasNote(gregorian: Moment): boolean {
+      const format = $settings.dailyNoteFormat || "YYYY-MM-DD";
+      const dateString = gregorian.format(format);
+      return !!$dailyNotes[dateString];
+  }
   
   export function tick() {
     todayNepali = getCurrentNepaliDate();
@@ -159,7 +187,7 @@
     <table class="calendar">
         <thead>
             <tr>
-                {#each nepaliDaysShort as dayName}
+                {#each nepaliDaysShortOrdered as dayName}
                     <th>{dayName}</th> 
                 {/each}
             </tr>
@@ -173,6 +201,7 @@
                             class:adjacent-month={!day.isCurrentMonth}
                             class:today={isSameNepaliDate(day.nepali, todayNepali)}
                             class:active={$activeFile && getDateUID(day.gregorian, "day") === $activeFile}
+                            class:has-note={hasNote(day.gregorian)}
                             on:click={(e) => handleDayClick(day, e)}
                             on:mouseenter={(e) => onHoverDay && onHoverDay(day.gregorian, e.target)}
                             on:contextmenu={(e) => onContextMenuDay && onContextMenuDay(day.gregorian, e)}
