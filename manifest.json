@@ -1,7 +1,6 @@
 {
 	"id": "nepali-calendar",
 	"name": "Nepali Calendar",
-	"main": "dist/main.js",
 	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "A calendar plugin for visualizing and navigating Nepali (Bikram Sambat) dates with daily notes integration.",
