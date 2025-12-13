@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "rollup -c -w",
 		"build": "tsc -noEmit -skipLibCheck && rollup -c",
-		"build:prod": "NODE_ENV=production npm run build && esbuild styles.css --minify --outfile=dist/styles.css && npm run postbuild",
+		"build:prod": "NODE_ENV=production bun run build && esbuild styles.css --minify --outfile=dist/styles.css && bun run postbuild",
 		"postbuild": "cp dist/manifest.json . && cp dist/styles.css .",
 		"release": "bumpp",
 		"release:patch": "bumpp patch",
