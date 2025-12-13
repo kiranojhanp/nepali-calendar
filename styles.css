@@ -25,25 +25,36 @@
 	--color-text-today: var(--interactive-accent);
 	--color-text-weeknum: var(--text-muted);
 	padding: 0 8px;
+	font-family: var(--font-interface);
 }
 
 #calendar-container .calendar {
 	border-collapse: collapse;
 	width: 100%;
+	font-family: var(--font-interface);
+	table-layout: fixed;
 }
 
 #calendar-container th {
 	background-color: var(--color-background-heading);
 	color: var(--color-text-heading);
-	font-size: 0.6em;
+	font-size: 0.75em;
 	letter-spacing: 1px;
 	padding: 4px;
 	text-align: center;
 	text-transform: uppercase;
+	font-family: var(--font-interface);
+	font-weight: var(--font-semibold);
+	width: 14.28%;
+	/* 100% / 7 days */
 }
 
 #calendar-container td {
-	padding: 0;
+	padding: 2px;
+	width: 14.28%;
+	/* 100% / 7 days */
+	text-align: center;
+	vertical-align: middle;
 }
 
 #calendar-container .weekend {
@@ -53,17 +64,21 @@
 /* Day styles */
 #calendar-container .day {
 	background-color: var(--color-background-day);
-	border-radius: 4px;
+	border-radius: var(--radius-s);
 	color: var(--color-text-day);
 	cursor: pointer;
-	font-size: 0.8em;
-	height: 100%;
+	font-size: 0.84em;
 	padding: 4px;
 	position: relative;
 	text-align: center;
 	transition: background-color 0.1s ease-in, color 0.1s ease-in;
-	vertical-align: baseline;
-	min-height: 26px;
+	height: 32px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--font-interface);
+	box-sizing: border-box;
 }
 
 #calendar-container .day:hover {
@@ -96,11 +111,11 @@
 #calendar-container .day.has-note::after {
 	content: '';
 	position: absolute;
-	bottom: 2px;
+	bottom: 3px;
 	left: 50%;
 	transform: translateX(-50%);
-	width: 4px;
-	height: 4px;
+	width: 5px;
+	height: 5px;
 	background-color: var(--interactive-accent);
 	border-radius: 50%;
 }
@@ -109,22 +124,50 @@
 #calendar-container nav {
 	align-items: center;
 	display: flex;
+	justify-content: space-between;
 	margin: 0.6em 0;
 	padding: 0 8px;
 	width: 100%;
 }
 
+#calendar-container .left-nav {
+	display: flex;
+	align-items: center;
+}
+
+#calendar-container .right-nav {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+#calendar-container .nav-button {
+	cursor: pointer;
+	padding: 4px;
+	border-radius: var(--radius-s);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+}
+
+#calendar-container .nav-button:hover {
+	background-color: var(--interactive-hover);
+}
+
 #calendar-container .title {
 	color: var(--color-text-title);
-	cursor: pointer;
 	display: flex;
 	font-size: 1.4em;
 	gap: 0.3em;
 	margin: 0;
+	font-family: var(--font-interface);
+	font-weight: var(--font-semibold);
 }
 
 #calendar-container .month {
-	font-weight: 500;
+	font-weight: var(--font-semibold);
 }
 
 #calendar-container .year {
@@ -151,15 +194,17 @@
 }
 
 #calendar-container .reset-button {
-	border-radius: 4px;
+	background-color: var(--color-background-heading);
+	border-radius: var(--radius-s);
 	color: var(--color-button);
 	cursor: pointer;
 	font-size: 0.7em;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	letter-spacing: 1px;
 	margin: 0 4px;
 	padding: 4px 8px;
 	text-transform: uppercase;
+	font-family: var(--font-interface);
 }
 
 #calendar-container .reset-button:hover {
@@ -195,7 +240,7 @@
 /* Week number styles */
 #calendar-container .week-num {
 	background-color: var(--color-background-weeknum);
-	border-radius: 4px;
+	border-radius: var(--radius-s);
 	color: var(--color-text-weeknum);
 	cursor: pointer;
 	font-size: 0.65em;
@@ -203,6 +248,7 @@
 	text-align: center;
 	transition: background-color 0.1s ease-in;
 	vertical-align: baseline;
+	font-family: var(--font-interface);
 }
 
 #calendar-container .week-num:hover {

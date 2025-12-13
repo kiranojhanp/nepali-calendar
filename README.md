@@ -7,23 +7,28 @@ A calendar plugin for [Obsidian](https://obsidian.md/) that displays and manages
 ## Features
 
 -   **Nepali Calendar View**: Display a calendar using the Bikram Sambat (BS) calendar system
--   **Dual Calendar Display**: Show both Nepali and English (Gregorian) month names simultaneously
 -   **Daily Notes Integration**: Create and navigate daily notes based on Nepali dates
 -   **Visual Indicators**:
     -   Highlight today's date
-    -   Show dots for days that have notes
+    -   Bold text and dot indicator for days that have notes
+    -   Active file highlighting
 -   **Quick Navigation**:
-    -   Navigate between months easily
-    -   Jump to today with a single click
+    -   Navigate between months with arrow buttons
+    -   Jump to today with a single click (TODAY button)
     -   Click on any day to open or create a daily note
+-   **Tooltips**:
+    -   Hover over any day to see the Gregorian date in your custom format
+    -   Descriptive tooltips on navigation buttons
 -   **Keyboard Shortcuts**:
     -   Ctrl/Cmd + Click to open notes in a new pane
     -   Ctrl/Cmd + Hover to preview notes
 -   **Customizable Settings**:
     -   Configure date format for daily notes
-    -   Set folder location for daily notes
+    -   Set custom folder location for daily notes
+    -   Set custom template for daily notes
+    -   Customize week start day (Sunday, Monday, etc.)
     -   Toggle confirmation before creating new notes
-    -   Show/hide Nepali or English month names
+    -   Adjust word count threshold for visual indicators
 
 ## Installation
 

@@ -22,12 +22,7 @@ import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
 import { activeFile, dailyNotes, weeklyNotes, settings } from "./ui/stores";
 import { getDailyNoteCustom } from "./ui/utils";
-import {
-	customTagsSource,
-	streakSource,
-	tasksSource,
-	wordCountSource,
-} from "./ui/sources";
+import { customTagsSource, streakSource, tasksSource } from "./ui/sources";
 
 export default class CalendarView extends ItemView {
 	private calendar!: Calendar;
@@ -105,12 +100,7 @@ export default class CalendarView extends ItemView {
 	async onOpen(): Promise<void> {
 		// Integration point: external plugins can listen for `calendar:open`
 		// to feed in additional sources.
-		const sources = [
-			customTagsSource,
-			streakSource,
-			wordCountSource,
-			tasksSource,
-		];
+		const sources = [customTagsSource, streakSource, tasksSource];
 		this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
 
 		this.calendar = new Calendar({
