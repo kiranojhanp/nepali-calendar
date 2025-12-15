@@ -210,6 +210,9 @@ export class CalendarSettingsTab extends PluginSettingTab {
 		checkboxContainer.style.gap = "10px";
 		checkboxContainer.style.marginTop = "10px";
 
+		// Ensure weekendDays is initialized
+		const weekendDays = this.plugin.options.weekendDays || [6];
+
 		weekdays.forEach((day, index) => {
 			const checkboxWrapper = checkboxContainer.createDiv();
 			checkboxWrapper.style.display = "flex";
@@ -219,9 +222,11 @@ export class CalendarSettingsTab extends PluginSettingTab {
 			const checkbox = checkboxWrapper.createEl("input", {
 				type: "checkbox",
 			});
-			checkbox.checked = this.plugin.options.weekendDays.includes(index);
+			checkbox.checked = weekendDays.includes(index);
 			checkbox.addEventListener("change", async () => {
-				const currentWeekends = [...this.plugin.options.weekendDays];
+				const currentWeekends = [
+					...(this.plugin.options.weekendDays || []),
+				];
 				if (checkbox.checked) {
 					if (!currentWeekends.includes(index)) {
 						currentWeekends.push(index);

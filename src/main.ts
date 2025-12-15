@@ -134,6 +134,7 @@ export default class CalendarPlugin extends Plugin {
 			};
 		});
 
+		// Save merged settings back to ensure new defaults are persisted
 		await this.saveData(this.options);
 	}
 
