@@ -12,6 +12,7 @@ export interface ISettings {
 	weekStart: IWeekStartOption;
 	shouldConfirmBeforeCreate: boolean;
 	highlightHolidays: boolean;
+	weekendDays: number[]; // 0=Sunday, 1=Monday, ..., 6=Saturday
 
 	// Daily Note settings
 	dailyNoteFormat: string;
@@ -39,6 +40,7 @@ export const defaultSettings = Object.freeze({
 	shouldConfirmBeforeCreate: true,
 	weekStart: "sunday" as IWeekStartOption,
 	highlightHolidays: true,
+	weekendDays: [6], // Saturday by default
 
 	wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
@@ -96,6 +98,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
 		this.addDotThresholdSetting();
 		this.addWeekStartSetting();
 		this.addHighlightHolidaysSetting();
+		this.addWeekendDaysSetting();
 		this.addShowWeeklyNoteSetting();
 
 		if (
@@ -188,6 +191,59 @@ export class CalendarSettingsTab extends PluginSettingTab {
 					}));
 				});
 			});
+	}
+
+	addWeekendDaysSetting(): void {
+		const { moment } = window;
+		const localizedWeekdays = moment.weekdays();
+		const container = this.containerEl.createDiv("weekend-days-setting");
+
+		new Setting(container)
+			.setName("Weekend days")
+			.setDesc(
+				"Select which days should be marked as weekends/holidays. These will be highlighted like other holidays."
+			);
+
+		const checkboxContainer = container.createDiv("checkbox-container");
+		checkboxContainer.style.display = "flex";
+		checkboxContainer.style.flexWrap = "wrap";
+		checkboxContainer.style.gap = "10px";
+		checkboxContainer.style.marginTop = "10px";
+
+		weekdays.forEach((day, index) => {
+			const checkboxWrapper = checkboxContainer.createDiv();
+			checkboxWrapper.style.display = "flex";
+			checkboxWrapper.style.alignItems = "center";
+			checkboxWrapper.style.gap = "5px";
+
+			const checkbox = checkboxWrapper.createEl("input", {
+				type: "checkbox",
+			});
+			checkbox.checked = this.plugin.options.weekendDays.includes(index);
+			checkbox.addEventListener("change", async () => {
+				const currentWeekends = [...this.plugin.options.weekendDays];
+				if (checkbox.checked) {
+					if (!currentWeekends.includes(index)) {
+						currentWeekends.push(index);
+					}
+				} else {
+					const idx = currentWeekends.indexOf(index);
+					if (idx > -1) {
+						currentWeekends.splice(idx, 1);
+					}
+				}
+				this.plugin.writeOptions(() => ({
+					weekendDays: currentWeekends.sort((a, b) => a - b),
+				}));
+			});
+
+			const label = checkboxWrapper.createEl("label");
+			label.textContent = localizedWeekdays[index];
+			label.style.cursor = "pointer";
+			label.addEventListener("click", () => {
+				checkbox.click();
+			});
+		});
 	}
 
 	addShowWeeklyNoteSetting(): void {
