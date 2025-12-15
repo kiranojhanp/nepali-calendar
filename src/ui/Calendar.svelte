@@ -11,6 +11,7 @@
     addMonthsToNepaliDate,
     isSameNepaliDate,
     getCurrentNepaliDate,
+    preloadMonthData,
     type NepaliDate
   } from "src/utils/bikramSambat";
   import {
@@ -20,6 +21,7 @@
     getDayTooltip,
     type CalendarDay
   } from "src/utils/calendarHelpers";
+  import { preloadCalendarData } from "src/api/calendar";
   import nepaliNumber from "src/utils/nepaliNumber";
   import { np_nepaliMonths } from "src/utils/mahina";
   import { CALENDAR_HEARTBEAT_INTERVAL } from "src/constants";
@@ -38,11 +40,16 @@
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
   // export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
   export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
+  export let onLongPressDay: (date: Moment) => void;
   // export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
 
   let todayNepali = getCurrentNepaliDate();
   let currentMonthNepali: NepaliDate = { ...todayNepali, day: 1 };
   let calendarDays: CalendarDay[] = [];
+  
+  // Long press state
+  let longPressTimer: number | null = null;
+  const LONG_PRESS_DURATION = 500; // ms
 
   // Get week start offset from settings
   $: weekStartOffset = getWeekStartOffset($settings.weekStart);
@@ -62,6 +69,21 @@
   $: {
       calendarDays = generateDays(currentMonthNepali, weekStartOffset);
       void $activeFile; // Ensure re-render when active file changes
+  }
+
+  // Preload data when month changes
+  $: if (currentMonthNepali) {
+      preloadSurroundingMonths(currentMonthNepali);
+  }
+
+  async function preloadSurroundingMonths(month: NepaliDate) {
+      try {
+          // Preload current month and adjacent months for smooth navigation
+          await preloadCalendarData(month.year, month.month, 1, 2);
+      } catch (error) {
+          // Silently fail - the fallback library will be used
+          console.debug("Could not preload calendar data:", error);
+      }
   }
 
   function prevMonth() {
@@ -85,9 +107,37 @@
   }
 
   function handleDayClick(day: CalendarDay, event: MouseEvent) {
+      // Don't trigger click if it was a long press
+      if (longPressTimer !== null) {
+          return;
+      }
       if (onClickDay) {
           onClickDay(day.gregorian, event.metaKey || event.ctrlKey);
       }
+  }
+
+  function handleDayMouseDown(day: CalendarDay) {
+      longPressTimer = window.setTimeout(() => {
+          if (onLongPressDay) {
+              onLongPressDay(day.gregorian);
+          }
+          longPressTimer = null;
+      }, LONG_PRESS_DURATION);
+  }
+
+  function handleDayMouseUp() {
+      if (longPressTimer !== null) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+      }
+  }
+
+  function handleDayTouchStart(day: CalendarDay) {
+      handleDayMouseDown(day);
+  }
+
+  function handleDayTouchEnd() {
+      handleDayMouseUp();
   }
 
   // Check if a day has a note
@@ -171,6 +221,12 @@
                                 class:has-note={hasNote(day.gregorian)}
                                 aria-label={getTooltip(day.gregorian)}
                                 on:click={(e) => handleDayClick(day, e)}
+                                on:mousedown={() => handleDayMouseDown(day)}
+                                on:mouseup={handleDayMouseUp}
+                                on:mouseleave={handleDayMouseUp}
+                                on:touchstart={() => handleDayTouchStart(day)}
+                                on:touchend={handleDayTouchEnd}
+                                on:touchcancel={handleDayTouchEnd}
                                 on:mouseenter={(e) => onHoverDay && onHoverDay(day.gregorian, e.target)}
                                 on:contextmenu={(e) => onContextMenuDay && onContextMenuDay(day.gregorian, e)}
                             >

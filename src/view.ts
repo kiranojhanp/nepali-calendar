@@ -12,9 +12,12 @@ import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import type { ISettings } from "src/settings";
+import { preloadMonthData, getCurrentNepaliDate } from "src/utils/bikramSambat";
+import { preloadCalendarData } from "src/api/calendar";
 
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
+import { DayDetailsModal } from "./ui/DayDetailsModal";
 import { activeFile, dailyNotes, weeklyNotes, settings } from "./ui/stores";
 import { getDailyNoteCustom } from "./ui/utils";
 import { customTagsSource, streakSource, tasksSource } from "./ui/sources";
@@ -40,6 +43,7 @@ export default class CalendarView extends ItemView {
 
 		this.onContextMenuDay = this.onContextMenuDay.bind(this);
 		this.onContextMenuWeek = this.onContextMenuWeek.bind(this);
+		this.onLongPressDay = this.onLongPressDay.bind(this);
 
 		this.registerEvent(
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,6 +97,20 @@ export default class CalendarView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
+		// Preload calendar data for the current month and surrounding months
+		try {
+			const currentNepali = getCurrentNepaliDate();
+			await preloadCalendarData(
+				currentNepali.year,
+				currentNepali.month,
+				2, // 2 months before
+				3 // 3 months after
+			);
+		} catch (error) {
+			console.error("Error preloading calendar data:", error);
+			// Continue anyway - the plugin will use fallback library
+		}
+
 		// Integration point: external plugins can listen for `calendar:open`
 		// to feed in additional sources.
 		const sources = [customTagsSource, streakSource, tasksSource];
@@ -107,6 +125,7 @@ export default class CalendarView extends ItemView {
 				onHoverDay: this.onHoverDay,
 				// onHoverWeek: this.onHoverWeek,
 				onContextMenuDay: this.onContextMenuDay,
+				onLongPressDay: this.onLongPressDay,
 				// onContextMenuWeek: this.onContextMenuWeek,
 				// sources,
 			},
@@ -161,6 +180,11 @@ export default class CalendarView extends ItemView {
 			x: event.pageX,
 			y: event.pageY,
 		});
+	}
+
+	private onLongPressDay(date: Moment): void {
+		// Open day details modal
+		new DayDetailsModal(this.app, date).open();
 	}
 
 	private onContextMenuWeek(date: Moment, event: MouseEvent): void {
