@@ -32,6 +32,7 @@ export interface CalendarDay {
 	nepali: NepaliDate;
 	gregorian: Moment;
 	isCurrentMonth: boolean;
+	hasHoliday?: boolean;
 }
 
 /**

@@ -11,6 +11,7 @@ export interface ISettings {
 	wordsPerDot: number;
 	weekStart: IWeekStartOption;
 	shouldConfirmBeforeCreate: boolean;
+	highlightHolidays: boolean;
 
 	// Daily Note settings
 	dailyNoteFormat: string;
@@ -37,6 +38,7 @@ const weekdays = [
 export const defaultSettings = Object.freeze({
 	shouldConfirmBeforeCreate: true,
 	weekStart: "sunday" as IWeekStartOption,
+	highlightHolidays: true,
 
 	wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
@@ -93,6 +95,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
 		});
 		this.addDotThresholdSetting();
 		this.addWeekStartSetting();
+		this.addHighlightHolidaysSetting();
 		this.addShowWeeklyNoteSetting();
 
 		if (
@@ -166,6 +169,22 @@ export class CalendarSettingsTab extends PluginSettingTab {
 				toggle.onChange(async (value) => {
 					this.plugin.writeOptions(() => ({
 						shouldConfirmBeforeCreate: value,
+					}));
+				});
+			});
+	}
+
+	addHighlightHolidaysSetting(): void {
+		new Setting(this.containerEl)
+			.setName("Highlight holidays")
+			.setDesc(
+				"Highlight holiday dates with red text color on the calendar"
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.options.highlightHolidays);
+				toggle.onChange(async (value) => {
+					this.plugin.writeOptions(() => ({
+						highlightHolidays: value,
 					}));
 				});
 			});

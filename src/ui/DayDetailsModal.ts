@@ -1,4 +1,4 @@
-import { Modal, App } from "obsidian";
+import { Modal, App, setIcon } from "obsidian";
 import type { Moment } from "moment";
 import { gregorianToNepali } from "src/utils/bikramSambat";
 
@@ -216,10 +216,12 @@ export class DayDetailsModal extends Modal {
 			contentEl.createDiv(
 				{ cls: "day-details-section events-section" },
 				(section) => {
-					section.createEl("h3", {
-						text: "📅 Events & Holidays",
+					const titleEl = section.createEl("h3", {
 						cls: "section-title",
 					});
+					const iconEl = titleEl.createSpan({ cls: "section-icon" });
+					setIcon(iconEl, "calendar-days");
+					titleEl.createSpan({ text: " Events & Holidays" });
 
 					if (data.events) {
 						data.events.forEach((event) => {
@@ -227,6 +229,18 @@ export class DayDetailsModal extends Modal {
 								div.createEl("span", {
 									text: event.title.np || event.title.en,
 								});
+								if (
+									event.description?.np ||
+									event.description?.en
+								) {
+									div.createEl("span", {
+										text:
+											event.description.np ||
+											event.description.en ||
+											"",
+										cls: "event-description",
+									});
+								}
 							});
 						});
 					}
@@ -241,6 +255,12 @@ export class DayDetailsModal extends Modal {
 											holiday.title.np ||
 											holiday.title.en,
 									});
+									if (holiday.type) {
+										div.createEl("span", {
+											text: holiday.type,
+											cls: "holiday-type",
+										});
+									}
 								}
 							);
 						});
@@ -254,41 +274,57 @@ export class DayDetailsModal extends Modal {
 			contentEl.createDiv(
 				{ cls: "day-details-section panchanga-section" },
 				(section) => {
-					section.createEl("h3", {
-						text: "🕉️ Panchanga",
+					const titleEl = section.createEl("h3", {
 						cls: "section-title",
 					});
+					const iconEl = titleEl.createSpan({ cls: "section-icon" });
+					setIcon(iconEl, "sparkles");
+					titleEl.createSpan({ text: " Panchanga" });
 
 					const grid = section.createDiv({ cls: "panchanga-grid" });
 
 					// Tithi
 					if (data.tithiDetails?.title?.np) {
+						let subtitle = data.tithiDetails.display?.np;
+						if (data.tithiDetails.endTime?.np) {
+							subtitle = subtitle
+								? `${subtitle} • ${data.tithiDetails.endTime.np} सम्म`
+								: `${data.tithiDetails.endTime.np} सम्म`;
+						}
 						this.createPanchangaItem(
 							grid,
 							"Tithi",
 							"तारिख:",
 							data.tithiDetails.title.np,
-							data.tithiDetails.display?.np
+							subtitle
 						);
 					}
 
 					// Paksha
 					if (data.panchangaDetails?.pakshya?.np) {
+						const pakshyaValue = data.panchangaDetails.pakshya.en
+							? `${data.panchangaDetails.pakshya.np} (${data.panchangaDetails.pakshya.en})`
+							: data.panchangaDetails.pakshya.np;
 						this.createPanchangaItem(
 							grid,
 							"Paksha",
 							"पक्ष:",
-							data.panchangaDetails.pakshya.np
+							pakshyaValue
 						);
 					}
 
 					// Chandra Rashi (Moon Sign)
 					if (data.panchangaDetails?.chandraRashi?.time?.np) {
+						const chandraRashiSubtitle = data.panchangaDetails
+							.chandraRashi.endTime?.np
+							? `${data.panchangaDetails.chandraRashi.endTime.np} सम्म`
+							: null;
 						this.createPanchangaItem(
 							grid,
 							"Moon Sign",
 							"चन्द्र राशि:",
-							data.panchangaDetails.chandraRashi.time.np
+							data.panchangaDetails.chandraRashi.time.np,
+							chandraRashiSubtitle
 						);
 					}
 
@@ -304,25 +340,36 @@ export class DayDetailsModal extends Modal {
 
 					// Nakshatra
 					if (data.panchangaDetails?.nakshatra?.np) {
-						const nakshatraText = data.panchangaDetails.nakshatra
-							.endTime?.np
-							? `${data.panchangaDetails.nakshatra.np} (${data.panchangaDetails.nakshatra.endTime.np} सम्म)`
-							: data.panchangaDetails.nakshatra.np;
+						let nakshatraSubtitle = null;
+						if (data.panchangaDetails.nakshatra.endTime?.np) {
+							nakshatraSubtitle = `${data.panchangaDetails.nakshatra.endTime.np} सम्म`;
+						}
+						if (data.panchangaDetails.nakshatra.ghaPa?.np) {
+							nakshatraSubtitle = nakshatraSubtitle
+								? `${nakshatraSubtitle} • ${data.panchangaDetails.nakshatra.ghaPa.np}`
+								: data.panchangaDetails.nakshatra.ghaPa.np;
+						}
 						this.createPanchangaItem(
 							grid,
 							"Nakshatra",
 							"नक्षत्र:",
-							nakshatraText
+							data.panchangaDetails.nakshatra.np,
+							nakshatraSubtitle
 						);
 					}
 
 					// Yoga
 					if (data.panchangaDetails?.yog?.np) {
+						const yogSubtitle = data.panchangaDetails.yog.endTime
+							?.np
+							? `${data.panchangaDetails.yog.endTime.np} सम्म`
+							: null;
 						this.createPanchangaItem(
 							grid,
 							"Yoga",
 							"योग:",
-							data.panchangaDetails.yog.np
+							data.panchangaDetails.yog.np,
+							yogSubtitle
 						);
 					}
 
@@ -332,21 +379,34 @@ export class DayDetailsModal extends Modal {
 							?.np
 							? `${data.panchangaDetails.karans.first.np} / ${data.panchangaDetails.karans.second.np}`
 							: data.panchangaDetails.karans.first.np;
+						let karanSubtitle = null;
+						if (data.panchangaDetails.karans.first.endTime?.np) {
+							karanSubtitle = `${data.panchangaDetails.karans.first.endTime.np} सम्म`;
+							if (
+								data.panchangaDetails.karans.second?.endTime?.np
+							) {
+								karanSubtitle += ` / ${data.panchangaDetails.karans.second.endTime.np} सम्म`;
+							}
+						}
 						this.createPanchangaItem(
 							grid,
 							"Karan",
 							"करण:",
-							karanText
+							karanText,
+							karanSubtitle
 						);
 					}
 
 					// Season (Ritu)
 					if (data.panchangaDetails?.season?.name?.np) {
+						const seasonValue = data.panchangaDetails.season.name.en
+							? `${data.panchangaDetails.season.name.np} (${data.panchangaDetails.season.name.en})`
+							: data.panchangaDetails.season.name.np;
 						this.createPanchangaItem(
 							grid,
 							"Season",
 							"ऋतु:",
-							data.panchangaDetails.season.name.np
+							seasonValue
 						);
 					}
 				}
@@ -358,35 +418,39 @@ export class DayDetailsModal extends Modal {
 			contentEl.createDiv(
 				{ cls: "day-details-section times-section" },
 				(section) => {
-					section.createEl("h3", {
-						text: "☀️ Sun & Moon Times",
+					const titleEl = section.createEl("h3", {
 						cls: "section-title",
 					});
+					const iconEl = titleEl.createSpan({ cls: "section-icon" });
+					setIcon(iconEl, "sun");
+					titleEl.createSpan({ text: " Sun & Moon Times" });
 
 					const grid = section.createDiv({ cls: "times-grid" });
 
 					if (data.panchangaDetails?.times?.sunrise) {
 						this.createTimeItem(
 							grid,
-							"🌅",
+							"https://img.icons8.com/color/48/000000/sunrise.png",
 							"Sunrise",
-							data.panchangaDetails.times.sunrise
+							data.panchangaDetails.times.sunrise,
+							true
 						);
 					}
 
 					if (data.panchangaDetails?.times?.sunset) {
 						this.createTimeItem(
 							grid,
-							"🌇",
+							"https://img.icons8.com/color/48/000000/sunset.png",
 							"Sunset",
-							data.panchangaDetails.times.sunset
+							data.panchangaDetails.times.sunset,
+							true
 						);
 					}
 
 					if (data.panchangaDetails?.times?.moonrise) {
 						this.createTimeItem(
 							grid,
-							"🌙",
+							"moon",
 							"Moonrise",
 							data.panchangaDetails.times.moonrise
 						);
@@ -395,7 +459,7 @@ export class DayDetailsModal extends Modal {
 					if (data.panchangaDetails?.times?.moonset) {
 						this.createTimeItem(
 							grid,
-							"🌑",
+							"moon-star",
 							"Moonset",
 							data.panchangaDetails.times.moonset
 						);
@@ -409,31 +473,34 @@ export class DayDetailsModal extends Modal {
 			contentEl.createDiv(
 				{ cls: "day-details-section era-section" },
 				(section) => {
-					section.createEl("h3", {
-						text: "📜 Other Eras",
+					const titleEl = section.createEl("h3", {
 						cls: "section-title",
 					});
+					const iconEl = titleEl.createSpan({ cls: "section-icon" });
+					setIcon(iconEl, "scroll");
+					titleEl.createSpan({ text: " Other Eras" });
 
 					const grid = section.createDiv({ cls: "era-grid" });
 
 					if (data.calendarInfo.nepaliEra.sakSambat) {
-						this.createEraItem(
-							grid,
-							"Sak Sambat",
-							data.calendarInfo.nepaliEra.sakSambat.np
-						);
+						const sakValue = data.calendarInfo.nepaliEra.sakSambat
+							.en
+							? `${data.calendarInfo.nepaliEra.sakSambat.np} (${data.calendarInfo.nepaliEra.sakSambat.en})`
+							: data.calendarInfo.nepaliEra.sakSambat.np;
+						this.createEraItem(grid, "Sak Sambat", sakValue);
 					}
 
 					if (data.calendarInfo.nepaliEra.nepalSambat) {
+						const nepalSambatValue = `${
+							data.calendarInfo.nepaliEra.nepalSambat.year.np
+						} ${
+							data.calendarInfo.nepaliEra.nepalSambat.month.np ||
+							""
+						}`;
 						this.createEraItem(
 							grid,
 							"Nepal Sambat",
-							`${
-								data.calendarInfo.nepaliEra.nepalSambat.year.np
-							} ${
-								data.calendarInfo.nepaliEra.nepalSambat.month
-									.np || ""
-							}`
+							nepalSambatValue
 						);
 					}
 				}
@@ -468,10 +535,19 @@ export class DayDetailsModal extends Modal {
 		container: HTMLElement,
 		icon: string,
 		label: string,
-		time: string
+		time: string,
+		isIconUrl = false
 	) {
 		container.createDiv({ cls: "time-item" }, (item) => {
-			item.createEl("span", { text: icon, cls: "time-icon" });
+			if (isIconUrl) {
+				item.createEl("img", {
+					attr: { src: icon, alt: label },
+					cls: "time-icon-img",
+				});
+			} else {
+				const iconEl = item.createDiv({ cls: "time-icon-lucide" });
+				setIcon(iconEl, icon);
+			}
 			item.createDiv({ cls: "time-info" }, (info) => {
 				info.createEl("span", { text: label, cls: "time-label" });
 				info.createEl("span", { text: time, cls: "time-value" });

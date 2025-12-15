@@ -21,7 +21,7 @@
     getDayTooltip,
     type CalendarDay
   } from "src/utils/calendarHelpers";
-  import { preloadCalendarData } from "src/api/calendar";
+  import { preloadCalendarData, getCalendarData } from "src/api/calendar";
   import nepaliNumber from "src/utils/nepaliNumber";
   import { np_nepaliMonths } from "src/utils/mahina";
   import { CALENDAR_HEARTBEAT_INTERVAL } from "src/constants";
@@ -46,6 +46,7 @@
   let todayNepali = getCurrentNepaliDate();
   let currentMonthNepali: NepaliDate = { ...todayNepali, day: 1 };
   let calendarDays: CalendarDay[] = [];
+  let holidayMap = new Map<string, boolean>();
   
   // Long press state
   let longPressTimer: number | null = null;
@@ -68,6 +69,15 @@
   // Make calendar reactive to month changes, settings, and active file changes
   $: {
       calendarDays = generateDays(currentMonthNepali, weekStartOffset);
+      
+      // Mark holidays on calendar days if setting is enabled
+      if ($settings.highlightHolidays) {
+          calendarDays = calendarDays.map(day => ({
+              ...day,
+              hasHoliday: day.isCurrentMonth && holidayMap.has(`${day.nepali.year}-${day.nepali.month}-${day.nepali.day}`)
+          }));
+      }
+      
       void $activeFile; // Ensure re-render when active file changes
   }
 
@@ -80,9 +90,38 @@
       try {
           // Preload current month and adjacent months for smooth navigation
           await preloadCalendarData(month.year, month.month, 1, 2);
+          
+          // Fetch holiday data for current month if highlighting is enabled
+          if ($settings.highlightHolidays) {
+              await fetchHolidayData(month);
+          }
       } catch (error) {
           // Silently fail - the fallback library will be used
           console.debug("Could not preload calendar data:", error);
+      }
+  }
+  
+  async function fetchHolidayData(month: NepaliDate) {
+      try {
+          const data = await getCalendarData(month.year, month.month);
+          
+          // Clear existing holiday data for this month
+          holidayMap = new Map(holidayMap);
+          
+          // Process the data array to find holidays
+          if (Array.isArray(data)) {
+              data.forEach((dayData: any) => {
+                  if (dayData.holidays && dayData.holidays.length > 0) {
+                      const key = `${dayData.calendarInfo.dates.bs.year.en}-${parseInt(dayData.calendarInfo.dates.bs.month.code.en)}-${parseInt(dayData.calendarInfo.dates.bs.day.en)}`;
+                      holidayMap.set(key, true);
+                  }
+              });
+          }
+          
+          // Trigger reactivity
+          calendarDays = [...calendarDays];
+      } catch (error) {
+          console.debug("Could not fetch holiday data:", error);
       }
   }
 
@@ -219,6 +258,7 @@
                                 class:today={isSameNepaliDate(day.nepali, todayNepali)}
                                 class:active={$activeFile && getDateUID(day.gregorian, "day") === $activeFile}
                                 class:has-note={hasNote(day.gregorian)}
+                                class:is-holiday={day.hasHoliday && $settings.highlightHolidays}
                                 aria-label={getTooltip(day.gregorian)}
                                 on:click={(e) => handleDayClick(day, e)}
                                 on:mousedown={() => handleDayMouseDown(day)}
