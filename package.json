@@ -1,6 +1,6 @@
 {
 	"name": "nepali-calendar",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"description": "Nepali Calendar view for Obsidian",
 	"main": "dist/main.js",
 	"scripts": {
