@@ -86,6 +86,16 @@ export interface DayData {
 			moonset: string | null;
 		};
 	};
+	auspiciousMoments?: {
+		sahits?: Array<{
+			title: { np: string | null; en: string | null };
+			description?: { np: string | null; en: string | null };
+		}>;
+		muhurats?: Array<{
+			periodName: string | null;
+			duration: string | null;
+		}>;
+	};
 	events?: Array<{
 		title: { np: string; en: string };
 		description?: { np: string | null; en: string | null };
@@ -269,6 +279,92 @@ export class DayDetailsModal extends Modal {
 			);
 		}
 
+		// Auspicious Moments (Sahits)
+		if (
+			data.auspiciousMoments?.sahits &&
+			data.auspiciousMoments.sahits.length > 0
+		) {
+			contentEl.createDiv(
+				{ cls: "day-details-section auspicious-section" },
+				(section) => {
+					const titleEl = section.createEl("h3", {
+						cls: "section-title",
+					});
+					const iconEl = titleEl.createSpan({ cls: "section-icon" });
+					setIcon(iconEl, "sun");
+					titleEl.createSpan({ text: " शुभ साइत / मुहूर्त" });
+
+					const grid = section.createDiv({ cls: "auspicious-grid" });
+
+					data.auspiciousMoments.sahits.forEach((sahit) => {
+						if (sahit.title?.np) {
+							grid.createDiv(
+								{ cls: "auspicious-item" },
+								(item) => {
+									item.createEl("span", {
+										text:
+											sahit.title.np ||
+											sahit.title.en ||
+											"",
+										cls: "auspicious-title",
+									});
+									if (
+										sahit.description?.np ||
+										sahit.description?.en
+									) {
+										item.createEl("span", {
+											text:
+												sahit.description.np ||
+												sahit.description.en ||
+												"",
+											cls: "auspicious-desc",
+										});
+									}
+								}
+							);
+						}
+					});
+				}
+			);
+		}
+
+		// Muhurats (Times)
+		if (
+			data.auspiciousMoments?.muhurats &&
+			data.auspiciousMoments.muhurats.length > 0
+		) {
+			contentEl.createDiv(
+				{ cls: "day-details-section muhurats-section" },
+				(section) => {
+					const titleEl = section.createEl("h3", {
+						cls: "section-title",
+					});
+					const iconEl = titleEl.createSpan({ cls: "section-icon" });
+					setIcon(iconEl, "clock");
+					titleEl.createSpan({ text: " काल / मुहूर्तम्" });
+
+					const grid = section.createDiv({ cls: "muhurats-grid" });
+
+					data.auspiciousMoments.muhurats.forEach((muhurat) => {
+						if (muhurat.periodName) {
+							grid.createDiv({ cls: "muhurat-item" }, (item) => {
+								item.createEl("span", {
+									text: muhurat.periodName,
+									cls: "muhurat-name",
+								});
+								if (muhurat.duration) {
+									item.createEl("span", {
+										text: muhurat.duration,
+										cls: "muhurat-time",
+									});
+								}
+							});
+						}
+					});
+				}
+			);
+		}
+
 		// Panchanga Details
 		if (data.panchangaDetails || data.tithiDetails) {
 			contentEl.createDiv(
@@ -278,11 +374,10 @@ export class DayDetailsModal extends Modal {
 						cls: "section-title",
 					});
 					const iconEl = titleEl.createSpan({ cls: "section-icon" });
-					setIcon(iconEl, "sparkles");
+					setIcon(iconEl, "globe");
 					titleEl.createSpan({ text: " Panchanga" });
 
 					const grid = section.createDiv({ cls: "panchanga-grid" });
-
 					// Tithi
 					if (data.tithiDetails?.title?.np) {
 						let subtitle = data.tithiDetails.display?.np;
