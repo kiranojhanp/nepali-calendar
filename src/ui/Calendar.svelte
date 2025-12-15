@@ -33,6 +33,24 @@
   import { activeFile, dailyNotes, settings } from "./stores";
   import type { ICalendarSource } from "obsidian-calendar-ui";
 
+  interface EventDetail {
+    isHoliday: boolean;
+    title?: { np: string; en: string };
+  }
+
+  interface DayAPIData {
+    calendarInfo: {
+      dates: {
+        bs: {
+          year: { en: string };
+          month: { code: { en: string } };
+          day: { en: string };
+        };
+      };
+    };
+    eventDetails?: EventDetail[];
+  }
+
   export let displayedMonth: Moment;
   // export let sources: ICalendarSource[];
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => boolean;
@@ -97,23 +115,26 @@
           }
       } catch (error) {
           // Silently fail - the fallback library will be used
-          console.debug("Could not preload calendar data:", error);
       }
   }
   
   async function fetchHolidayData(month: NepaliDate) {
       try {
-          const data = await getCalendarData(month.year, month.month);
+          const data = await getCalendarData(month.year, month.month) as unknown as DayAPIData[];
           
           // Clear existing holiday data for this month
           holidayMap = new Map(holidayMap);
           
           // Process the data array to find holidays
           if (Array.isArray(data)) {
-              data.forEach((dayData: any) => {
-                  if (dayData.holidays && dayData.holidays.length > 0) {
-                      const key = `${dayData.calendarInfo.dates.bs.year.en}-${parseInt(dayData.calendarInfo.dates.bs.month.code.en)}-${parseInt(dayData.calendarInfo.dates.bs.day.en)}`;
-                      holidayMap.set(key, true);
+              data.forEach((dayData) => {
+                  // Check if eventDetails exists and has any holiday events
+                  if (dayData.eventDetails && Array.isArray(dayData.eventDetails)) {
+                      const hasHoliday = dayData.eventDetails.some((event) => event.isHoliday === true);
+                      if (hasHoliday) {
+                          const key = `${dayData.calendarInfo.dates.bs.year.en}-${parseInt(dayData.calendarInfo.dates.bs.month.code.en)}-${parseInt(dayData.calendarInfo.dates.bs.day.en)}`;
+                          holidayMap.set(key, true);
+                      }
                   }
               });
           }
@@ -121,7 +142,7 @@
           // Trigger reactivity
           calendarDays = [...calendarDays];
       } catch (error) {
-          console.debug("Could not fetch holiday data:", error);
+          // Silently fail - holidays are optional enhancement
       }
   }
 

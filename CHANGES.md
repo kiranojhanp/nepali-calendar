@@ -1,5 +1,32 @@
 # Summary of Changes - API Integration
 
+## Version 1.0.8 - Latest Features
+
+### Holiday Highlighting ✨
+
+-   **NEW**: Holiday dates are now highlighted in red on the calendar
+-   Automatically fetches holiday information from the API
+-   Toggle on/off via Settings → General Settings → "Highlight holidays"
+-   Enabled by default for better visibility of important dates
+
+### Day Details Modal Enhancements 🎨
+
+-   **Icons8 Integration**: High-quality sunrise/sunset icons from icons8.com
+-   **Lucide Icons**: Beautiful icons for Panchanga, Events, and Other Eras sections
+-   **Fixed**: Close button now properly visible against gradient header
+-   **Enhanced Data**: All available panchanga details now displayed including:
+    -   End times for Tithi, Nakshatra, Yoga, and Karan
+    -   English translations where available
+    -   Event descriptions and holiday types
+    -   Complete Nepali era information
+
+### Technical Improvements 🔧
+
+-   Proper TypeScript interfaces for API data
+-   Removed debug console statements
+-   Improved error handling with silent fallbacks
+-   Better type safety throughout the codebase
+
 ## What Changed
 
 The Nepali Calendar plugin has been refactored to use the **miti.bikram.io API** instead of manual date calculations, with comprehensive offline support.
